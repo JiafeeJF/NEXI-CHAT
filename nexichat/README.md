@@ -126,7 +126,7 @@ nexichat/
 ├── package.json          # 项目配置
 ├── package-lock.json     # 依赖锁文件
 ├── server.js             # 主服务器
-└── README.txt            # 项目说明
+└── README.md             # 项目说明
 ```
 
 ## 安全注意事项
