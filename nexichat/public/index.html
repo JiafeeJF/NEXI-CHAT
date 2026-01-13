@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXI CHAT</title>
-    
+
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    
+    <link rel="stylesheet" href="css/layout.css">
     <style>
         .channel-icon {
             display: inline-flex;
@@ -22,6 +23,7 @@
             font-size: 14px;
             margin-right: 8px;
         }
+
         .fa-loaded .channel-icon i {
             font-size: 14px;
             display: inline-block;
@@ -30,21 +32,22 @@
             line-height: 24px;
             text-align: center;
         }
+
         .fa-loaded .channel-icon .fa-lock {
             font-size: 14px;
         }
     </style>
 
     <script>
-        (function() {
+        (function () {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-            link.onload = function() {
+            link.onload = function () {
                 document.documentElement.classList.add('fa-loaded');
                 console.log('Font Awesome加载完成，已切换为图标样式');
             };
-            link.onerror = function() {
+            link.onerror = function () {
                 console.log('Font Awesome加载失败，使用本地CSS数字样式');
             };
             document.head.appendChild(link);
@@ -53,6 +56,7 @@
 
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div class="app-container">
         <div class="sidebar">
@@ -60,7 +64,7 @@
                 <img src="images/logo.png" alt="NEXI CHAT" class="app-title">
                 <button id="settingsBtn" class="settings-btn">⚙️</button>
             </div>
-            
+
             <div class="user-profile">
                 <div class="avatar-container">
                     <img id="userAvatar" src="images/default.png" alt="Avatar" class="avatar">
@@ -70,7 +74,7 @@
                     <p id="userBio" class="bio">这个人很懒，什么也没留下</p>
                 </div>
             </div>
-            
+
             <div class="channels">
                 <h2 class="section-title">频道</h2>
                 <div class="channel-list">
@@ -100,22 +104,69 @@
                     </div>
                 </div>
             </div>
-            
+
             <button id="logoutBtn" class="logout-btn">退出登录</button>
         </div>
-        
+
         <div class="chat-container">
             <div class="chat-header">
                 <div class="current-channel">
                     <span id="currentChannelIcon" class="channel-icon"></span>
                     <h2 id="currentChannelName">请选择频道</h2>
                 </div>
-                
+                <div id="more" onclick="showMore();">
+                    <span>三</span>
+                </div>
+                <div id="mobileNav" class="nav" onclick="showMore();" hidden>
+                    <div class="card">
+                        <div class="user-profile">
+                            <div class="user-info">
+                                <div class="avatar-container">
+                                    <img onclick="openUserProfile(currentUser.id);" id="userAvatarMobile"
+                                        src="images/default.png" alt="Avatar" class="avatar">
+                                </div>
+                                <div>
+                                    <h3 id="usernameMobile">用户</h3>
+                                    <p id="userBioMobile" class="bio">这个人很懒，什么也没留下</p>
+                                </div>
+                            </div>
+                            <button onclick="settingsPanel.classList.add('open');" class="settings-btn">⚙️</button>
+                        </div>
+                        <div class="channel-list">
+                            <div class="channel-item" data-channel="General">
+                                <span class="channel-icon">1<i class="fa-solid fa-1" style="display: none;"></i></span>
+                                <span class="channel-name">频道1</span>
+                            </div>
+                            <div class="channel-item" data-channel="Technology">
+                                <span class="channel-icon">2<i class="fa-solid fa-2" style="display: none;"></i></span>
+                                <span class="channel-name">频道2</span>
+                            </div>
+                            <div class="channel-item" data-channel="Gaming">
+                                <span class="channel-icon">3<i class="fa-solid fa-3" style="display: none;"></i></span>
+                                <span class="channel-name">频道3</span>
+                            </div>
+                            <div class="channel-item" data-channel="Music">
+                                <span class="channel-icon">4<i class="fa-solid fa-4" style="display: none;"></i></span>
+                                <span class="channel-name">频道4</span>
+                            </div>
+                            <div class="channel-item" data-channel="Random">
+                                <span class="channel-icon">5<i class="fa-solid fa-5" style="display: none;"></i></span>
+                                <span class="channel-name">频道5</span>
+                            </div>
+                            <div class="channel-item" data-channel="Channel105">
+                                <span class="channel-icon">🔒<i class="fa-solid fa-lock"
+                                        style="display: none;"></i></span>
+                                <span class="channel-name">105专用频道</span>
+                            </div>
+                        </div>
+                        <button id="logoutBtn" class="logout-btn">退出登录</button>
+                    </div>
+                </div>
             </div>
-            
+
             <div id="messagesContainer" class="messages-container">
             </div>
-            
+
             <div class="message-input-container">
                 <div class="input-tools">
                     <label for="imageUpload" class="upload-btn">🖼️</label>
@@ -133,13 +184,12 @@
                 <button id="sendBtn" class="send-btn">发送</button>
             </div>
         </div>
-        
         <div id="settingsPanel" class="settings-panel">
             <div class="settings-header">
                 <h2>个人设置</h2>
                 <button id="closeSettings" class="close-btn">✕</button>
             </div>
-            
+
             <div class="settings-content">
                 <div class="settings-section">
                     <h3>头像设置</h3>
@@ -151,7 +201,7 @@
                         <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                     </div>
                 </div>
-                
+
                 <div class="settings-section">
                     <h3>个人信息</h3>
                     <div class="form-group">
@@ -179,7 +229,7 @@
                         <input type="email" id="settingsEmail" placeholder="请输入邮箱">
                     </div>
                 </div>
-                
+
                 <div class="settings-section">
                     <h3>消息通知设置</h3>
                     <div class="form-group">
@@ -194,60 +244,60 @@
                     <div class="form-group">
                         <label>接收通知的频道</label>
                         <div class="channel-notification-settings">
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">频道1</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannelGeneral" value="General" checked>
-                                    <span class="toggle-slider"></span>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">频道1</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannelGeneral" value="General" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">频道2</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannelTechnology" value="Technology" checked>
-                                    <span class="toggle-slider"></span>
+                            </div>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">频道2</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannelTechnology" value="Technology" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">频道3</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannelGaming" value="Gaming" checked>
-                                    <span class="toggle-slider"></span>
+                            </div>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">频道3</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannelGaming" value="Gaming" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">频道4</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannelMusic" value="Music" checked>
-                                    <span class="toggle-slider"></span>
+                            </div>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">频道4</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannelMusic" value="Music" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">频道5</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannelRandom" value="Random" checked>
-                                    <span class="toggle-slider"></span>
+                            </div>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">频道5</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannelRandom" value="Random" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
-                        <div class="channel-notification-item">
-                            <label class="channel-toggle-container">
-                                <span class="channel-toggle-name">105专用频道</span>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="notifyChannel105" value="Channel105" checked>
-                                    <span class="toggle-slider"></span>
+                            </div>
+                            <div class="channel-notification-item">
+                                <label class="channel-toggle-container">
+                                    <span class="channel-toggle-name">105专用频道</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="notifyChannel105" value="Channel105" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
-                            </label>
-                        </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -258,15 +308,15 @@
                         <button id="changePasswordBtn" class="btn-secondary">更改密码</button>
                     </div>
                 </div>
-                
+
                 <!-- 屏蔽词管理功能已移除，不向普通用户开放 -->
-                
+
                 <div class="settings-actions">
                     <button id="saveSettings" class="btn-primary">保存设置</button>
                 </div>
             </div>
         </div>
-        
+
         <div id="passwordChangePanel" class="settings-panel">
             <div class="settings-header">
                 <h2>更改密码</h2>
@@ -298,7 +348,7 @@
 
         <!-- 通知提示容器 -->
         <div id="notificationContainer" class="notification-container"></div>
-        
+
         <div id="userProfileModal" class="profile-modal">
             <div class="profile-content">
                 <div class="profile-header">
@@ -317,20 +367,20 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
     </div>
 
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/chat.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             if (document.documentElement.classList.contains('fa-loaded')) {
                 switchToFAIcons();
             } else {
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
+                const observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
                         if (mutation.attributeName === 'class' && document.documentElement.classList.contains('fa-loaded')) {
                             switchToFAIcons();
                             observer.disconnect();
@@ -353,7 +403,7 @@
             }
 
             document.querySelectorAll('.channel-item').forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     const channelNum = this.querySelector('.channel-name').textContent.replace('频道', '');
                     const iconEl = document.getElementById('currentChannelIcon');
                     iconEl.innerHTML = `${channelNum}<i class="fa-solid fa-${channelNum}" style="display: none;"></i>`;
@@ -367,4 +417,5 @@
         });
     </script>
 </body>
+
 </html>

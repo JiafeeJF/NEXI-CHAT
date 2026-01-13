@@ -5,7 +5,7 @@ if (!currentUser) {
 
 const socketProtocol = window.location.protocol;
 const socketHost = window.location.hostname;
-const socketPort = '3000';
+const socketPort = window.location.port;
 const socketUrl = `${socketProtocol}//${socketHost}:${socketPort}`;
 
 const socket = io(socketUrl, {
@@ -76,31 +76,31 @@ async function startRecording() {
         console.log('navigator.mediaDevices:', navigator.mediaDevices);
         console.log('navigator.mediaDevices.getUserMedia:', navigator.mediaDevices ? navigator.mediaDevices.getUserMedia : '未定义');
         console.log('window.MediaRecorder:', window.MediaRecorder);
-        
+
         if (!navigator.mediaDevices) {
             console.error('不支持 navigator.mediaDevices API');
             showNotification('您的浏览器不支持语音录制功能，请升级到最新版本', 'error');
             return;
         }
-        
+
         if (!navigator.mediaDevices.getUserMedia) {
             console.error('不支持 navigator.mediaDevices.getUserMedia API');
             showNotification('您的浏览器不支持语音录制功能，请升级到最新版本', 'error');
             return;
         }
-        
+
         if (!window.MediaRecorder) {
             console.error('不支持 window.MediaRecorder API');
             showNotification('您的浏览器不支持语音录制功能，请升级到最新版本', 'error');
             return;
         }
-        
+
         if (typeof MediaRecorder.isTypeSupported !== 'function') {
             console.warn('浏览器不支持MediaRecorder.isTypeSupported方法，将使用默认MIME类型');
         }
-        
+
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
         let mimeType = 'audio/webm;codecs=opus';
         const supportedMimeTypes = [
             'audio/webm;codecs=opus',
@@ -108,7 +108,7 @@ async function startRecording() {
             'audio/ogg;codecs=opus',
             'audio/ogg'
         ];
-        
+
         if (typeof MediaRecorder.isTypeSupported === 'function') {
             for (const type of supportedMimeTypes) {
                 if (MediaRecorder.isTypeSupported(type)) {
@@ -120,24 +120,24 @@ async function startRecording() {
         } else {
             console.log('使用默认MIME类型:', mimeType);
         }
-        
+
         try {
             mediaRecorder = new MediaRecorder(stream, { mimeType });
         } catch (error) {
             console.warn('使用指定MIME类型失败，使用默认设置:', error);
             mediaRecorder = new MediaRecorder(stream);
         }
-        
+
         mediaRecorder._stream = stream;
-        
+
         audioChunks = [];
-        
+
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
                 audioChunks.push(event.data);
             }
         };
-        
+
         mediaRecorder.onstop = () => {
             console.log('MediaRecorder stop event triggered');
             if (mediaRecorder._stream) {
@@ -155,26 +155,26 @@ async function startRecording() {
                 processRecordedAudio();
             }
         };
-        
+
         mediaRecorder.onerror = (event) => {
             console.error('MediaRecorder错误:', event.error);
             showNotification('录制过程中发生错误', 'error');
             stopRecording();
         };
-        
+
         mediaRecorder.start();
         console.log('开始录制语音');
-        
+
         recordingTimer = setTimeout(() => {
             console.log('录制时长已达60秒，自动停止');
             isRecordingTimeout = true;
             stopRecording();
         }, MAX_RECORDING_DURATION * 1000);
-        
+
         const voiceBtn = document.getElementById('voiceBtn');
         voiceBtn.classList.add('recording');
         voiceBtn.textContent = '⏺️';
-        
+
     } catch (error) {
         console.error('录制语音失败:', error);
         if (error.name === 'NotAllowedError') {
@@ -207,13 +207,13 @@ async function isAudioSilent(audioBlob) {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             audioContext.decodeAudioData(e.target.result, (buffer) => {
                 const channelData = buffer.getChannelData(0);
-                
+
                 let sum = 0;
                 for (let i = 0; i < channelData.length; i++) {
                     sum += Math.abs(channelData[i]);
                 }
                 const average = sum / channelData.length;
-                
+
                 const silenceThreshold = 0.01;
                 resolve(average < silenceThreshold);
             }, () => {
@@ -227,15 +227,15 @@ async function isAudioSilent(audioBlob) {
 async function processRecordedAudio() {
     try {
         const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        
+
         const isSilent = await isAudioSilent(audioBlob);
         if (isSilent) {
             showNotification('未检测到声音，请重新录制', 'warning');
             return;
         }
-        
+
         await sendVoiceMessage(audioBlob);
-        
+
     } catch (error) {
         console.error('处理音频失败:', error);
         showNotification('处理语音消息失败', 'error');
@@ -247,23 +247,23 @@ async function processRecordedAudio() {
 async function sendVoiceMessage(audioBlob) {
     try {
         uploadProgress.textContent = '上传中...';
-        
+
         let fileExtension = 'webm';
         if (audioBlob.type.includes('ogg')) {
             fileExtension = 'ogg';
         }
-        
+
         const formData = new FormData();
         formData.append('voice', audioBlob, `voice.${fileExtension}`);
         formData.append('userId', currentUser.id);
-        
+
         const response = await fetch('/api/upload/voice', {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             socket.emit('sendMessage', {
                 userId: currentUser.id,
@@ -272,12 +272,12 @@ async function sendVoiceMessage(audioBlob) {
                 voice: data.voice,
                 reply_to: currentReplyTo
             });
-            
+
             uploadProgress.textContent = '上传成功';
             setTimeout(() => {
                 uploadProgress.textContent = '';
             }, 1000);
-            
+
             cancelReply();
         } else {
             uploadProgress.textContent = '上传失败';
@@ -304,25 +304,25 @@ let notificationSettings = {
 function loadNotificationSettings() {
     console.log('=== loadNotificationSettings 函数被调用 ===');
     console.log('当前时间:', new Date().toISOString());
-    
+
     const savedSettings = localStorage.getItem('notificationSettings');
     console.log('从本地存储获取的设置:', savedSettings);
-    
+
     if (savedSettings) {
         try {
             notificationSettings = JSON.parse(savedSettings);
             console.log('成功从本地存储加载设置:', JSON.stringify(notificationSettings));
-            
+
             if (notificationSettings.soundEnabled === undefined) {
                 console.log('soundEnabled 未定义，设置默认值为 true');
                 notificationSettings.soundEnabled = true;
             }
-            
+
             if (!Array.isArray(notificationSettings.selectedChannels)) {
                 console.log('selectedChannels 不是数组，设置默认值');
                 notificationSettings.selectedChannels = ['General', 'Technology', 'Gaming', 'Music', 'Random', 'Channel105'];
             }
-            
+
             saveNotificationSettings();
         } catch (error) {
             console.error('加载通知设置失败:', error);
@@ -341,9 +341,9 @@ function loadNotificationSettings() {
         };
         saveNotificationSettings();
     }
-    
+
     updateNotificationSettingsUI();
-    
+
     console.log('当前 notificationSettings:', JSON.stringify(notificationSettings));
 }
 
@@ -356,19 +356,19 @@ function initNotificationAudio() {
         notificationAudio = new Audio(audioPath);
         notificationAudio.volume = 1.0;
         notificationAudio.preload = 'auto';
-        
+
         notificationAudio.loop = false;
-        
+
         notificationAudio.addEventListener('loadeddata', () => {
             console.log('提示音音频加载完成');
         });
-        
+
         notificationAudio.addEventListener('error', (e) => {
             console.error('提示音音频加载错误:', e);
             console.error('错误代码:', e.target.error.code);
             notificationAudio = null;
         });
-        
+
         console.log('提示音音频对象初始化成功');
     } catch (error) {
         console.error('初始化提示音音频对象失败:', error);
@@ -381,21 +381,21 @@ function playNotificationSound() {
     console.log('当前时间:', new Date().toISOString());
     console.log('notificationSettings 对象:', JSON.stringify(notificationSettings));
     console.log('soundEnabled 状态:', notificationSettings.soundEnabled);
-    
+
     if (!notificationSettings.soundEnabled) {
         console.log('提示音未启用，不播放');
         return;
     }
-    
+
     try {
         if (!notificationAudio) {
             console.log('音频对象不存在，立即初始化');
             initNotificationAudio();
         }
-        
+
         if (notificationAudio) {
             notificationAudio.currentTime = 0;
-            
+
             console.log('正在尝试播放音频');
             notificationAudio.play().then(() => {
                 console.log('音频播放成功！');
@@ -403,7 +403,7 @@ function playNotificationSound() {
                 console.error('播放提示音失败:', error);
                 console.error('错误类型:', error.name);
                 console.error('错误消息:', error.message);
-                
+
                 if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
                     console.log('浏览器阻止了自动播放，请求用户交互');
                     showNotification('请先与页面交互以启用通知声音', 'info');
@@ -425,10 +425,10 @@ function playNotificationSound() {
 function preloadAudioAndRequestPermission() {
     try {
         initNotificationAudio();
-        
+
         if (notificationAudio) {
             notificationAudio.volume = 0;
-            
+
             notificationAudio.play().then(() => {
                 console.log('获得音频播放权限');
                 notificationAudio.pause();
@@ -439,7 +439,7 @@ function preloadAudioAndRequestPermission() {
                 notificationAudio.volume = 1.0;
             });
         }
-        
+
         console.log('音频预加载完成');
     } catch (error) {
         console.error('预加载音频失败:', error);
@@ -451,7 +451,7 @@ function showBrowserNotification(title, message) {
         console.log('浏览器不支持通知功能');
         return;
     }
-    
+
     if (Notification.permission === 'granted') {
         new Notification(title, {
             body: message,
@@ -482,9 +482,9 @@ function updateNotificationSettingsUI() {
     if (notificationSoundCheckbox) {
         notificationSoundCheckbox.checked = notificationSettings.soundEnabled;
     }
-    
 
-    
+
+
     const channelCheckboxes = document.querySelectorAll('.channel-notification-item input[type="checkbox"]');
     channelCheckboxes.forEach(checkbox => {
         checkbox.checked = notificationSettings.selectedChannels.includes(checkbox.value);
@@ -505,8 +505,11 @@ const settingsBtn = document.getElementById('settingsBtn');
 const closeSettings = document.getElementById('closeSettings');
 const settingsPanel = document.getElementById('settingsPanel');
 const userAvatar = document.getElementById('userAvatar');
+const userAvatarMobile = document.getElementById('userAvatarMobile')
 const username = document.getElementById('username');
+const usernameMobile = document.getElementById('usernameMobile')
 const userBio = document.getElementById('userBio');
+const userBioMobile = document.getElementById('userBioMobile');
 const logoutBtn = document.getElementById('logoutBtn');
 const avatarInput = document.getElementById('avatarInput');
 const avatarPreview = document.getElementById('avatarPreview');
@@ -519,7 +522,7 @@ const saveSettings = document.getElementById('saveSettings');
 const emojiBtn = document.getElementById('emojiBtn');
 const emojiPicker = document.getElementById('emojiPicker');
 const emojiGrid = document.querySelector('.emoji-grid');
-
+const nav = document.getElementById('mobileNav');
 
 const changePasswordBtn = document.getElementById('changePasswordBtn');
 const passwordChangePanel = document.getElementById('passwordChangePanel');
@@ -545,17 +548,17 @@ console.log('settingsBtn:', settingsBtn);
 function showNotification(message, type = 'info', duration = 3000) {
     const container = document.getElementById('notificationContainer');
     if (!container) return;
-    
+
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = `<p class="message">${message}</p>`;
-    
+
     container.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
@@ -568,11 +571,11 @@ function showNotification(message, type = 'info', duration = 3000) {
 
 function initPage() {
     settingsPanel.classList.remove('open');
-    
+
     updateUserInfo();
-    
+
     preloadAudioAndRequestPermission();
-    
+
     messagesContainer.innerHTML = `
         <div style="
             text-align: center;
@@ -650,19 +653,19 @@ function initPage() {
             </div>
         </div>
     `;
-    
 
-    
+
+
     currentChannelName.textContent = '请选择频道';
     currentChannelIcon.textContent = '';
-    
+
     const messageInputContainer = document.querySelector('.message-input-container');
     messageInputContainer.style.display = 'none';
-    
+
     loadNotificationSettings();
-    
+
     setupNotificationEventListeners();
-    
+
     setupVoiceButtonEventListeners();
 
 }
@@ -675,9 +678,9 @@ function setupNotificationEventListeners() {
             saveNotificationSettings();
         });
     }
-    
 
-    
+
+
     const channelCheckboxes = document.querySelectorAll('.channel-notification-item input[type="checkbox"]');
     channelCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
@@ -697,7 +700,7 @@ function setupNotificationEventListeners() {
 function setupVoiceButtonEventListeners() {
     const voiceBtn = document.getElementById('voiceBtn');
     if (!voiceBtn) return;
-    
+
     voiceBtn.addEventListener('mousedown', async (e) => {
         e.preventDefault();
         try {
@@ -707,15 +710,15 @@ function setupVoiceButtonEventListeners() {
             showNotification('无法开始录制，请检查麦克风权限', 'error');
         }
     });
-    
+
     voiceBtn.addEventListener('mouseup', () => {
         stopRecording();
     });
-    
+
     voiceBtn.addEventListener('mouseleave', () => {
         stopRecording();
     });
-    
+
     voiceBtn.addEventListener('touchstart', async (e) => {
         e.preventDefault();
         try {
@@ -725,7 +728,7 @@ function setupVoiceButtonEventListeners() {
             showNotification('无法开始录制，请检查麦克风权限', 'error');
         }
     });
-    
+
     voiceBtn.addEventListener('touchend', () => {
         stopRecording();
     });
@@ -736,20 +739,33 @@ function updateUserInfo() {
         console.error('currentUser is not defined');
         return;
     }
-    
+
     if (username) {
         username.textContent = currentUser.nickname || currentUser.username;
     }
-    
+
+    if (usernameMobile) {
+        usernameMobile.textContent = currentUser.nickname || currentUser.username;
+    }
+
     if (userBio) {
         userBio.textContent = currentUser.bio ? currentUser.bio : '这个人很懒，什么也没留下';
     }
-    
+
+    if (userBioMobile) {
+        userBioMobile.textContent = currentUser.bio ? currentUser.bio : '这个人很懒，什么也没留下';
+    }
+
     if (userAvatar) {
         const avatarUrl = currentUser.avatar || 'images/default.png';
         userAvatar.src = avatarUrl;
     }
-    
+
+    if (userAvatarMobile) {
+        const avatarUrl = currentUser.avatar || 'images/default.png';
+        userAvatarMobile.src = avatarUrl;
+    }
+
     if (settingsUsername) {
         settingsUsername.value = currentUser.username;
     }
@@ -769,7 +785,7 @@ function updateUserInfo() {
         const avatarUrl = currentUser.avatar || 'images/default.png';
         avatarPreview.src = avatarUrl;
     }
-    
+
     console.log('User info updated:', {
         username: currentUser.username,
         bio: currentUser.bio,
@@ -782,12 +798,12 @@ function addMessageToDOM(message) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${message.user_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
-    
+
     const isCurrentUser = message.user_id === currentUser.id;
     const now = new Date();
     const messageTime = new Date(message.created_at);
     const timeDiff = (now - messageTime) / (1000 * 60);
-    
+
     console.log('撤回按钮条件检查:', {
         messageId: message.id,
         isCurrentUser,
@@ -795,7 +811,7 @@ function addMessageToDOM(message) {
         isRecalled: message.is_recalled,
         shouldShowRecallBtn: isCurrentUser && timeDiff <= 2 && !message.is_recalled
     });
-    
+
     const messageAvatar = message.avatar || 'images/default.png';
     let messageContent = `
         <div class="avatar-container">
@@ -806,9 +822,9 @@ function addMessageToDOM(message) {
                 <span class="message-username">${message.nickname || message.username}</span>
             </div>
     `;
-    
 
-    
+
+
     if (message.reply_info) {
         const repliedContent = message.reply_info.content || '图片消息';
         messageContent += `<div class="message-reply" style="
@@ -822,17 +838,17 @@ function addMessageToDOM(message) {
             <span style="font-weight: bold; color: #0071e3;">@${message.reply_info.nickname || message.reply_info.username}</span>: ${repliedContent.length > 30 ? repliedContent.substring(0, 30) + '...' : repliedContent}
         </div>`;
     }
-    
+
     if (message.content) {
         messageContent += `<div class="message-text">${message.content}</div>`;
     }
-    
+
     if (message.image && !message.is_recalled) {
         messageContent += `<img src="${message.image}" alt="Chat image" class="message-image" onclick="viewImage(this)">`;
     }
-    
 
-    
+
+
     if (message.voice && !message.is_recalled) {
         const audioType = message.voice.endsWith('.ogg') ? 'audio/ogg' : 'audio/webm;codecs=opus';
         messageContent += `<div class="message-voice bubble">
@@ -858,9 +874,9 @@ function addMessageToDOM(message) {
             </div>
         </div>`;
     }
-    
+
     const actionButtons = [];
-    
+
     actionButtons.push(`<button class="reply-btn" data-message-id="${message.id}" style="
         background: none;
         border: none;
@@ -873,7 +889,7 @@ function addMessageToDOM(message) {
         transition: all 0.3s ease;
         opacity: 0.7;
     ">💬</button>`);
-    
+
     if (isCurrentUser && timeDiff <= 2 && !message.is_recalled) {
         actionButtons.push(`<button class="recall-btn" data-message-id="${message.id}" data-channel="${message.channel}" style="
             background: none;
@@ -889,26 +905,26 @@ function addMessageToDOM(message) {
             margin-left: 5px;
         ">🗑️</button>`);
     }
-    
+
     if (actionButtons.length > 0) {
         messageContent += `<div class="message-actions">${actionButtons.join('')}</div>`;
     }
-    
-    
+
+
     messageContent += '</div>';
     messageElement.innerHTML = messageContent;
-    
+
     messageElement.style.opacity = '0';
     messageElement.style.transform = 'translateY(10px)';
-    
+
     messagesContainer.appendChild(messageElement);
-    
+
     setTimeout(() => {
         messageElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         messageElement.style.opacity = '1';
         messageElement.style.transform = 'translateY(0)';
     }, 10);
-    
+
     scrollToBottom();
 }
 
@@ -921,11 +937,11 @@ function formatTime(dateString) {
 
 function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
+
     requestAnimationFrame(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
-    
+
     setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 100);
@@ -934,12 +950,12 @@ function scrollToBottom() {
 function replyToMessage(messageId) {
     const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
     if (!messageElement) return;
-    
+
     const username = messageElement.querySelector('.message-username').textContent;
     const content = messageElement.querySelector('.message-text')?.textContent || '图片消息';
-    
+
     currentReplyTo = messageId;
-    
+
     let replyIndicator = document.getElementById('replyIndicator');
     if (!replyIndicator) {
         replyIndicator = document.createElement('div');
@@ -955,10 +971,10 @@ function replyToMessage(messageId) {
             color: #666;
             margin-bottom: -10px;
         `;
-        
+
         messageInput.parentElement.insertBefore(replyIndicator, messageInput);
     }
-    
+
     replyIndicator.innerHTML = `
         <span>回复 <strong>${username}</strong>: ${content.length > 20 ? content.substring(0, 20) + '...' : content}</span>
         <button id="cancelReply" style="
@@ -970,9 +986,9 @@ function replyToMessage(messageId) {
             padding: 2px 6px;
         ">取消</button>
     `;
-    
+
     document.getElementById('cancelReply').addEventListener('click', cancelReply);
-    
+
     messageInput.focus();
 }
 
@@ -986,32 +1002,32 @@ function cancelReply() {
 
 async function sendMessage() {
     const content = messageInput.value.trim();
-    
+
     if (!content) {
         console.log('消息内容为空，不发送');
         return;
     }
-    
+
     console.log('发送消息:', content);
     console.log('当前用户:', currentUser);
     console.log('当前用户ID:', currentUser?.id);
     console.log('当前频道:', currentChannel);
     console.log('当前回复的消息ID:', currentReplyTo);
-    
+
     console.log('Socket连接状态:', socket.connected);
-    
+
     if (!socket.connected) {
         console.error('Socket连接已断开，无法发送消息');
         showNotification('网络连接已断开，请刷新页面重试', 'error');
         return;
     }
-    
+
     if (!currentUser?.id) {
         console.error('用户信息缺失，无法发送消息');
         showNotification('用户信息异常，请重新登录', 'error');
         return;
     }
-    
+
     socket.emit('sendMessage', {
         userId: currentUser.id,
         channel: currentChannel,
@@ -1019,31 +1035,31 @@ async function sendMessage() {
         image: null,
         reply_to: currentReplyTo
     });
-    
+
     console.log('消息已发送到服务器');
-    
-    
+
+
     messageInput.value = '';
     adjustTextareaHeight();
-    
+
     cancelReply();
 
 }
 
 async function uploadImage(file) {
     uploadProgress.textContent = '上传中...';
-    
+
     const formData = new FormData();
     formData.append('image', file);
-    
+
     try {
         const response = await fetch('/api/upload/image', {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             socket.emit('sendMessage', {
                 userId: currentUser.id,
@@ -1052,12 +1068,12 @@ async function uploadImage(file) {
                 image: data.image,
                 reply_to: currentReplyTo
             });
-            
+
             uploadProgress.textContent = '上传成功';
             setTimeout(() => {
                 uploadProgress.textContent = '';
             }, 1000);
-            
+
             cancelReply();
         } else {
             uploadProgress.textContent = '上传失败';
@@ -1084,7 +1100,7 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         z-index: 9999;
         backdrop-filter: blur(2px);
     `;
-    
+
     const popup = document.createElement('div');
     popup.style.cssText = `
         background: white;
@@ -1095,7 +1111,7 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         animation: popupFadeIn 0.3s ease;
     `;
-    
+
     const messageText = document.createElement('p');
     messageText.textContent = message;
     messageText.style.cssText = `
@@ -1105,14 +1121,14 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         line-height: 1.5;
         text-align: center;
     `;
-    
+
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
         display: flex;
         justify-content: space-between;
         gap: 12px;
     `;
-    
+
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '取消';
     cancelBtn.style.cssText = `
@@ -1126,7 +1142,7 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         cursor: pointer;
         transition: all 0.3s ease;
     `;
-    
+
     const confirmBtn = document.createElement('button');
     confirmBtn.textContent = '确定';
     confirmBtn.style.cssText = `
@@ -1140,55 +1156,55 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         cursor: pointer;
         transition: all 0.3s ease;
     `;
-    
+
     cancelBtn.addEventListener('mouseenter', () => {
         cancelBtn.style.background = '#f2f2f7';
     });
-    
+
     cancelBtn.addEventListener('mouseleave', () => {
         cancelBtn.style.background = 'white';
     });
-    
+
     confirmBtn.addEventListener('mouseenter', () => {
         confirmBtn.style.background = '#0057b7';
         confirmBtn.style.transform = 'translateY(-1px)';
         confirmBtn.style.boxShadow = '0 4px 12px rgba(0, 113, 227, 0.4)';
     });
-    
+
     confirmBtn.addEventListener('mouseleave', () => {
         confirmBtn.style.background = '#0071e3';
         confirmBtn.style.transform = 'translateY(0)';
         confirmBtn.style.boxShadow = 'none';
     });
-    
+
     cancelBtn.addEventListener('click', () => {
         document.body.removeChild(overlay);
         if (onCancel) onCancel();
     });
-    
+
     confirmBtn.addEventListener('click', () => {
         document.body.removeChild(overlay);
         if (onConfirm) onConfirm();
     });
-    
+
     const handleKeyDown = (e) => {
         if (e.key === 'Escape') {
             document.body.removeChild(overlay);
             if (onCancel) onCancel();
         }
     };
-    
+
     overlay.addEventListener('keydown', handleKeyDown);
     cancelBtn.focus();
-    
+
     buttonContainer.appendChild(cancelBtn);
     buttonContainer.appendChild(confirmBtn);
     popup.appendChild(messageText);
     popup.appendChild(buttonContainer);
     overlay.appendChild(popup);
-    
+
     document.body.appendChild(overlay);
-    
+
     const style = document.createElement('style');
     style.textContent = `
         @keyframes popupFadeIn {
@@ -1203,7 +1219,7 @@ function showCustomConfirm(message, onConfirm, onCancel) {
         }
     `;
     document.head.appendChild(style);
-    
+
     setTimeout(() => {
         document.head.removeChild(style);
     }, 300);
@@ -1230,7 +1246,7 @@ function viewImage(img) {
         z-index: 9999;
         cursor: pointer;
     `;
-    
+
     const modalImg = document.createElement('img');
     modalImg.src = img.src;
     modalImg.style.cssText = `
@@ -1239,10 +1255,10 @@ function viewImage(img) {
         object-fit: contain;
         border-radius: 10px;
     `;
-    
+
     modal.appendChild(modalImg);
     document.body.appendChild(modal);
-    
+
     modal.onclick = () => {
         document.body.removeChild(modal);
     };
@@ -1259,22 +1275,22 @@ async function openUserProfile(userId) {
     try {
         const response = await fetch(`/api/profile/${userId}`);
         const user = await response.json();
-        
+
         if (user) {
             document.getElementById('profileAvatar').src = user.avatar || 'images/default.png';
-            
+
             const profileUsername = document.getElementById('profileUsername');
             if (user.username === "jiafee") {
                 profileUsername.innerHTML = `${user.nickname || user.username} <img src="images/blue.png" class="user-badge">`;
             } else {
                 profileUsername.textContent = user.nickname || user.username;
             }
-            
+
             document.getElementById('profileBio').textContent = user.bio || '该用户未设置个性签名';
             document.getElementById('profileGender').textContent = `性别: ${user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : '其他'}`;
             document.getElementById('profileEmail').textContent = `邮箱: ${user.email || '该用户未设置邮箱'}`;
             document.getElementById('profileJoined').textContent = `加入时间: ${formatDate(user.created_at)}`;
-            
+
             document.getElementById('userProfileModal').classList.add('show');
         }
     } catch (error) {
@@ -1348,7 +1364,7 @@ messageInput.addEventListener('paste', async (e) => {
             await uploadImage(file);
         }
     }
-    
+
     setTimeout(adjustTextareaHeight, 0);
 });
 
@@ -1369,7 +1385,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         z-index: 9999;
         backdrop-filter: blur(2px);
     `;
-    
+
     const popup = document.createElement('div');
     popup.style.cssText = `
         background: white;
@@ -1380,7 +1396,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         animation: popupFadeIn 0.3s ease;
     `;
-    
+
     const title = document.createElement('h3');
     title.textContent = `进入 ${channelName}`;
     title.style.cssText = `
@@ -1389,7 +1405,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         margin: 0 0 16px 0;
         text-align: center;
     `;
-    
+
     const messageText = document.createElement('p');
     messageText.textContent = '该频道需要密码才能进入，请输入密码：';
     messageText.style.cssText = `
@@ -1399,7 +1415,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         line-height: 1.5;
         text-align: center;
     `;
-    
+
     const passwordInput = document.createElement('input');
     passwordInput.type = 'password';
     passwordInput.placeholder = '请输入频道密码';
@@ -1412,7 +1428,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         margin-bottom: 16px;
         box-sizing: border-box;
     `;
-    
+
     const errorMessage = document.createElement('div');
     errorMessage.style.cssText = `
         color: #ff3b30;
@@ -1421,14 +1437,14 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         text-align: center;
         min-height: 20px;
     `;
-    
+
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
         display: flex;
         justify-content: space-between;
         gap: 12px;
     `;
-    
+
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '取消';
     cancelBtn.style.cssText = `
@@ -1442,7 +1458,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         cursor: pointer;
         transition: all 0.3s ease;
     `;
-    
+
     const confirmBtn = document.createElement('button');
     confirmBtn.textContent = '进入频道';
     confirmBtn.style.cssText = `
@@ -1456,34 +1472,34 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         cursor: pointer;
         transition: all 0.3s ease;
     `;
-    
+
     cancelBtn.addEventListener('mouseenter', () => {
         cancelBtn.style.background = '#f2f2f7';
     });
-    
+
     cancelBtn.addEventListener('mouseleave', () => {
         cancelBtn.style.background = 'white';
     });
-    
+
     confirmBtn.addEventListener('mouseenter', () => {
         confirmBtn.style.background = '#0057b7';
         confirmBtn.style.transform = 'translateY(-1px)';
         confirmBtn.style.boxShadow = '0 4px 12px rgba(0, 113, 227, 0.4)';
     });
-    
+
     confirmBtn.addEventListener('mouseleave', () => {
         confirmBtn.style.background = '#0071e3';
         confirmBtn.style.transform = 'translateY(0)';
         confirmBtn.style.boxShadow = 'none';
     });
-    
+
     async function verifyPassword() {
         const password = passwordInput.value.trim();
         if (!password) {
             errorMessage.textContent = '请输入密码';
             return;
         }
-        
+
         try {
             const response = await fetch('/api/channel/verify-password', {
                 method: 'POST',
@@ -1496,9 +1512,9 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
                     userId: currentUser.id
                 })
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 document.body.removeChild(overlay);
                 if (onSuccess) onSuccess();
@@ -1509,28 +1525,28 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
             errorMessage.textContent = '验证失败，请稍后重试';
         }
     }
-    
+
     cancelBtn.addEventListener('click', () => {
         document.body.removeChild(overlay);
     });
-    
+
     confirmBtn.addEventListener('click', verifyPassword);
-    
+
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             verifyPassword();
         }
     });
-    
+
     const handleKeyDown = (e) => {
         if (e.key === 'Escape') {
             document.body.removeChild(overlay);
         }
     };
-    
+
     overlay.addEventListener('keydown', handleKeyDown);
     passwordInput.focus();
-    
+
     buttonContainer.appendChild(cancelBtn);
     buttonContainer.appendChild(confirmBtn);
     popup.appendChild(title);
@@ -1539,9 +1555,9 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
     popup.appendChild(errorMessage);
     popup.appendChild(buttonContainer);
     overlay.appendChild(popup);
-    
+
     document.body.appendChild(overlay);
-    
+
     const style = document.createElement('style');
     style.textContent = `
         @keyframes popupFadeIn {
@@ -1556,7 +1572,7 @@ function showPasswordPrompt(channelName, channelId, onSuccess) {
         }
     `;
     document.head.appendChild(style);
-    
+
     setTimeout(() => {
         document.head.removeChild(style);
     }, 300);
@@ -1576,10 +1592,10 @@ channelItems.forEach(item => {
     item.addEventListener('click', async () => {
         const channel = item.dataset.channel;
         const channelName = item.querySelector('.channel-name').textContent;
-        
+
         if (channel === 'Channel105') {
             const hasAccess = await checkChannelAccess(channel);
-            
+
             if (!hasAccess) {
                 showPasswordPrompt(channelName, channel, () => {
                     switchChannel(item);
@@ -1587,7 +1603,7 @@ channelItems.forEach(item => {
                 return;
             }
         }
-        
+
         switchChannel(item);
     });
 });
@@ -1597,24 +1613,24 @@ function switchChannel(item) {
     if (activeChannel) {
         activeChannel.classList.remove('active');
     }
-    
+
     item.classList.add('active');
-    
+
     currentChannel = item.dataset.channel;
-    
+
     currentChannelName.textContent = item.querySelector('.channel-name').textContent;
     currentChannelIcon.textContent = item.querySelector('.channel-icon').textContent;
-    
+
     socket.emit('joinChannel', currentChannel, currentUser.id);
-    
+
     messagesContainer.innerHTML = '';
-    
+
     const messageInputContainer = document.querySelector('.message-input-container');
-    
+
     messageInputContainer.style.display = 'flex';
-    
+
     loadMessages(currentChannel);
-    
+
 
 }
 
@@ -1633,12 +1649,12 @@ window.addEventListener('click', (e) => {
     if (e.target === settingsPanel) {
         settingsPanel.classList.remove('open');
     }
-    
+
     const profileModal = document.getElementById('userProfileModal');
     if (e.target === profileModal) {
         closeUserProfile();
     }
-    
+
 
 });
 
@@ -1691,26 +1707,26 @@ window.addEventListener('click', (e) => {
 if (passwordChangeForm) {
     passwordChangeForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const currentPass = currentPassword.value.trim();
         const newPass = newPassword.value.trim();
         const confirmPass = confirmPassword.value.trim();
-        
+
         if (!currentPass) {
             showNotification('请输入当前密码', 'error');
             return;
         }
-        
+
         if (!newPass) {
             showNotification('请输入新密码', 'error');
             return;
         }
-        
+
         if (newPass !== confirmPass) {
             showNotification('新密码和确认密码不一致', 'error');
             return;
         }
-        
+
         showCustomConfirm('确定要更改密码吗？', async () => {
             try {
                 const response = await fetch('/api/change-password', {
@@ -1724,14 +1740,14 @@ if (passwordChangeForm) {
                         newPassword: newPass
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     showNotification('密码更改成功', 'success');
-                    
+
                     passwordChangeForm.reset();
-                    
+
                     closePasswordChangePanel();
                 } else {
                     showNotification(data.message || '密码更改失败，请检查当前密码是否正确', 'error');
@@ -1772,21 +1788,21 @@ saveSettings.addEventListener('click', async () => {
     const gender = settingsGender.value;
     const email = settingsEmail.value.trim() || null;
     const nickname = settingsNickname.value.trim();
-    
+
     const avatarFile = avatarInput.files[0];
     let avatarUrl = currentUser.avatar;
-    
+
     if (avatarFile) {
         const formData = new FormData();
         formData.append('avatar', avatarFile);
         formData.append('userId', currentUser.id);
-        
+
         try {
             const response = await fetch('/api/upload/avatar', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const data = await response.json();
             if (data.success) {
                 avatarUrl = data.avatar;
@@ -1795,7 +1811,7 @@ saveSettings.addEventListener('click', async () => {
             console.error('上传头像失败:', error);
         }
     }
-    
+
     try {
         const response = await fetch(`/api/profile/${currentUser.id}`, {
             method: 'PUT',
@@ -1804,11 +1820,11 @@ saveSettings.addEventListener('click', async () => {
             },
             body: JSON.stringify({ bio, gender, email, nickname })
         });
-        
+
         if (response.ok) {
             updateCurrentUser({ bio, gender, email, nickname, avatar: avatarUrl });
             updateUserInfo();
-            
+
             const saveMsg = document.createElement('div');
             saveMsg.textContent = '设置已保存';
             saveMsg.style.cssText = `
@@ -1824,7 +1840,7 @@ saveSettings.addEventListener('click', async () => {
                 z-index: 10000;
             `;
             document.body.appendChild(saveMsg);
-            
+
             setTimeout(() => {
                 document.body.removeChild(saveMsg);
             }, 2000);
@@ -1841,51 +1857,51 @@ socket.on('messageReceived', (message) => {
     console.log('收到的消息:', JSON.stringify(message));
     console.log('当前频道:', currentChannel);
     console.log('是否为当前频道:', message.channel === currentChannel);
-    
+
     if (message.is_blocked) {
         console.log('消息包含屏蔽词，准备存储到本地');
         if (parseInt(message.user_id) === parseInt(currentUser.id)) {
             saveBlockedMessage(message);
         }
     }
-    
+
     if (message.channel === currentChannel) {
         console.log('消息在当前频道，添加到DOM');
         addMessageToDOM(message);
-        
+
         setTimeout(reinitAudioPlayers, 100);
     } else {
         console.log('消息不在当前频道，检查是否需要通知');
     }
-    
+
     const shouldNotify = message.channel !== currentChannel && notificationSettings.selectedChannels.includes(message.channel);
     console.log('是否需要发送浏览器通知:', shouldNotify);
     console.log('notificationSettings.selectedChannels:', notificationSettings.selectedChannels);
     console.log('message.channel 是否在 selectedChannels 中:', notificationSettings.selectedChannels.includes(message.channel));
-    
+
     if (parseInt(message.user_id) !== parseInt(currentUser.id)) {
         console.log('调用 playNotificationSound 函数');
         playNotificationSound();
     } else {
         console.log('自己发送的消息，不播放提示音');
     }
-    
+
     if (shouldNotify) {
         console.log('满足浏览器通知条件，准备发送通知');
         const title = `${message.nickname || message.username} 在 ${message.channel}`;
         const content = message.content || (message.image ? '发送了一张图片' : '发送了一条消息');
         console.log('通知内容:', { title, content });
-        
+
         console.log('调用 showBrowserNotification 函数');
         showBrowserNotification(title, content);
     }
-    
+
     console.log('消息接收事件详情:', {
         channel: message.channel,
         currentChannel: currentChannel,
         isCurrentChannel: message.channel === currentChannel,
         isSelectedChannel: notificationSettings.selectedChannels.includes(message.channel),
-        notificationSettings: {...notificationSettings}
+        notificationSettings: { ...notificationSettings }
     });
 });
 
@@ -1898,20 +1914,20 @@ function saveBlockedMessage(message) {
     try {
         const blockedMessagesJson = localStorage.getItem('blockedMessages');
         const blockedMessages = blockedMessagesJson ? JSON.parse(blockedMessagesJson) : [];
-        
+
         const blockedMessageWithExpiry = {
             ...message,
             storedAt: new Date().toISOString()
         };
-        
+
         blockedMessages.push(blockedMessageWithExpiry);
-        
+
         localStorage.setItem('blockedMessages', JSON.stringify(blockedMessages));
-        
+
         console.log('被屏蔽消息已存储到本地:', blockedMessageWithExpiry);
-        
+
         scheduleBlockedMessageDeletion(message.id, 24 * 60 * 60 * 1000);
-        
+
     } catch (error) {
         console.error('存储被屏蔽消息失败:', error);
     }
@@ -1922,15 +1938,15 @@ function scheduleBlockedMessageDeletion(messageId, delay) {
         try {
             const blockedMessagesJson = localStorage.getItem('blockedMessages');
             if (!blockedMessagesJson) return;
-            
+
             let blockedMessages = JSON.parse(blockedMessagesJson);
-            
+
             blockedMessages = blockedMessages.filter(msg => msg.id !== messageId);
-            
+
             localStorage.setItem('blockedMessages', JSON.stringify(blockedMessages));
-            
+
             console.log(`被屏蔽消息 ${messageId} 已自动删除`);
-            
+
         } catch (error) {
             console.error('自动删除被屏蔽消息失败:', error);
         }
@@ -1941,22 +1957,22 @@ function cleanupExpiredBlockedMessages() {
     try {
         const blockedMessagesJson = localStorage.getItem('blockedMessages');
         if (!blockedMessagesJson) return;
-        
+
         let blockedMessages = JSON.parse(blockedMessagesJson);
         const now = new Date();
         const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        
+
         const unexpiredMessages = blockedMessages.filter(msg => {
             if (!msg.storedAt) return false;
             const storedTime = new Date(msg.storedAt);
             return storedTime > oneDayAgo;
         });
-        
+
         if (unexpiredMessages.length !== blockedMessages.length) {
             localStorage.setItem('blockedMessages', JSON.stringify(unexpiredMessages));
             console.log(`已清理 ${blockedMessages.length - unexpiredMessages.length} 条过期的被屏蔽消息`);
         }
-        
+
     } catch (error) {
         console.error('清理过期被屏蔽消息失败:', error);
     }
@@ -1985,26 +2001,26 @@ socket.on('messageRecalled', (data) => {
                     }
                 }
             }
-            
+
             messageText.textContent = '[此消息已撤回]';
             messageText.style.color = '#8e8e93';
             messageText.style.fontStyle = 'italic';
-            
+
             const messageImage = messageElement.querySelector('.message-image');
             if (messageImage) {
                 messageImage.remove();
             }
-            
+
             const messageVoice = messageElement.querySelector('.message-voice');
             if (messageVoice) {
                 messageVoice.remove();
             }
-            
+
             const messageFile = messageElement.querySelector('.message-file');
             if (messageFile) {
                 messageFile.remove();
             }
-            
+
             const recallBtn = messageElement.querySelector('.recall-btn');
             if (recallBtn) {
                 recallBtn.remove();
@@ -2020,7 +2036,7 @@ socket.on('messageDeleted', (data) => {
             messageElement.style.opacity = '0';
             messageElement.style.transform = 'translateY(10px)';
             messageElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            
+
             setTimeout(() => {
                 messageElement.remove();
             }, 300);
@@ -2038,20 +2054,20 @@ function initCustomAudioPlayers() {
         const progressBar = player.querySelector('.progress-bar');
         const progressFill = player.querySelector('.progress-fill');
         const currentTimeDisplay = player.querySelector('.current-time');
-        
+
         audio.addEventListener('loadedmetadata', () => {
         });
-        
+
         audio.addEventListener('timeupdate', () => {
             const progress = (audio.currentTime / audio.duration) * 100;
             progressFill.style.width = `${progress}%`;
-            
+
             const currentSeconds = Math.floor(audio.currentTime);
             const minutes = Math.floor(currentSeconds / 60);
             const seconds = currentSeconds % 60;
             currentTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         });
-        
+
         playBtn.addEventListener('click', () => {
             if (audio.paused) {
                 audio.play();
@@ -2061,13 +2077,13 @@ function initCustomAudioPlayers() {
                 playBtn.classList.remove('playing');
             }
         });
-        
+
         audio.addEventListener('ended', () => {
             playBtn.classList.remove('playing');
             progressFill.style.width = '0%';
             audio.currentTime = 0;
         });
-        
+
         progressBar.addEventListener('click', (e) => {
             const rect = progressBar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
@@ -2119,14 +2135,14 @@ function insertEmoji(emoji) {
     const endPos = messageInput.selectionEnd;
     const textBefore = messageInput.value.substring(0, startPos);
     const textAfter = messageInput.value.substring(endPos);
-    
+
     messageInput.value = textBefore + emoji + textAfter;
-    
+
     messageInput.focus();
     messageInput.setSelectionRange(startPos + emoji.length, startPos + emoji.length);
-    
+
     adjustTextareaHeight();
-    
+
     emojiPicker.classList.remove('show');
 }
 
@@ -2149,25 +2165,31 @@ function reinitAudioPlayers() {
 
 async function loadMessages(channel) {
     messagesContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #6e6e73;"><span class="loading-messages">加载消息中...</span></div>';
-    
+
     try {
         const response = await fetch(`/api/messages/${channel}`);
         const messages = await response.json();
-        
+
         messagesContainer.innerHTML = '';
-        
+
         messages.forEach(message => {
-        if (message.is_blocked && parseInt(message.user_id) !== parseInt(currentUser.id)) {
-            return;
-        }
-        addMessageToDOM(message);
-    });
-    
-    reinitAudioPlayers();
-        
+            if (message.is_blocked && parseInt(message.user_id) !== parseInt(currentUser.id)) {
+                return;
+            }
+            addMessageToDOM(message);
+        });
+
+        reinitAudioPlayers();
+
         scrollToBottom();
     } catch (error) {
         messagesContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #ff3b30;">加载消息失败</div>';
+    }
+}
+
+function showMore() {
+    if (nav) {
+        nav.getAttribute('hidden') != undefined ? nav.removeAttribute('hidden') : nav.setAttribute('hidden', 'hidden');
     }
 }
 
