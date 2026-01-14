@@ -1617,3 +1617,23 @@ input:checked + .toggle-slider:before {
     margin-left: 5px;
     object-fit: contain;
 } */
+
+/* Bilibili 视频嵌入样式 */
+.message .bili-video {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.message .bili-video iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+}
+/* 当视频在气泡内时，去掉内部额外的背景，让气泡样式保持一致 */
+.message-text .bili-video {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}

@@ -1,15 +1,16 @@
 {
-  "name": "lan-chat-website",
+  "name": "nexi-chat",
   "version": "1.0.0",
-  "description": "A multi-channel LAN chat website with Apple-style design",
-  "main": "server.js",
+  "description": "一个基于 Node.js 开发的多频道聊天应用。",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "frontend": "node frontend-server.js",
-    "dev-frontend": "nodemon frontend-server.js",
-    "start-all": "concurrently \"node server.js\" \"node frontend-server.js\"",
-    "install-deps": "npm install"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "frontend": "cd scripts && node frontend-server.js",
+    "dev-frontend": "cd scripts && nodemon frontend-server.js",
+    "start-all": "concurrently \"node index.js\" \"cd scripts && node frontend-server.js\"",
+    "install-deps": "npm install",
+    "generate-cert": "cd scripts && node generate-cert.js"
   },
   "keywords": [
     "chat",

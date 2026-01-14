@@ -1,11 +1,10 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
-const https = require('https');
 const fs = require('fs');
 const app = express();
 const proxy = require('express-http-proxy');
-const apiProxy = proxy('https://localhost:3000', {
+const apiProxy = proxy('http://localhost:3000', {
     proxyReqPathResolver: (req) => {
         const path = req.originalUrl;
         console.log('Proxying API request to:', path);
@@ -17,10 +16,6 @@ const apiProxy = proxy('https://localhost:3000', {
     },
     filter: (req, res) => {
         return req.path.startsWith('/api');
-    },
-    proxyReqOptDecorator: function(proxyReqOpts) {
-        proxyReqOpts.rejectUnauthorized = false;
-        return proxyReqOpts;
     }
 });
 
@@ -28,7 +23,7 @@ const PORT = process.env.FRONTEND_PORT || 3001;
 
 console.log('Current working directory:', __dirname);
 
-const publicDir = path.join(__dirname, 'public');
+const publicDir = path.join(__dirname, '..', 'public');
 console.log('Public directory:', publicDir);
 
 if (!fs.existsSync(publicDir)) {
@@ -73,7 +68,7 @@ app.get('/register', (req, res) => {
 
 app.get('*', (req, res) => {
     const filePath = path.join(publicDir, req.path);
-    
+
     if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
         console.log('Serving static file:', filePath);
         res.sendFile(filePath);
@@ -83,12 +78,7 @@ app.get('*', (req, res) => {
     }
 });
 
-const sslOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'cert', 'cert.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.crt'))
-};
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(sslOptions, app);
 const os = require('os');
 const networkInterfaces = os.networkInterfaces();
 let lanIp = null;
@@ -104,11 +94,20 @@ for (const ifaceName in networkInterfaces) {
     if (lanIp) break;
 }
 
-httpsServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`Frontend HTTPS server is running on https://0.0.0.0:${PORT}`);
-    
-    if (lanIp) {
-        console.log(`Frontend LAN HTTPS access address: https://${lanIp}:${PORT}`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log('Available addresses:');
+
+    const os = require('os');
+    const networkInterfaces = os.networkInterfaces();
+
+    for (const ifaceName in networkInterfaces) {
+        const interfaces = networkInterfaces[ifaceName];
+        for (const iface of interfaces) {
+            if (iface.family === 'IPv4') {
+                console.log(`  http://${iface.address}:${PORT} (${ifaceName})`);
+            }
+        }
     }
 });
 

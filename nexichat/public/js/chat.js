@@ -3,10 +3,7 @@ if (!currentUser) {
     window.location.href = 'login.html';
 }
 
-const socketProtocol = window.location.protocol;
-const socketHost = window.location.hostname;
-const socketPort = window.location.port;
-const socketUrl = `${socketProtocol}//${socketHost}:${socketPort}`;
+const socketUrl = 'http://localhost:3000';
 
 const socket = io(socketUrl, {
     reconnection: true,
@@ -16,9 +13,6 @@ const socket = io(socketUrl, {
 });
 
 console.log('Socket.io连接配置:', {
-    protocol: socketProtocol,
-    host: socketHost,
-    port: socketPort,
     url: socketUrl
 });
 
@@ -918,6 +912,59 @@ function addMessageToDOM(message) {
     messageElement.style.transform = 'translateY(10px)';
 
     messagesContainer.appendChild(messageElement);
+
+    // 自动渲染 B 站链接，如果消息包含 BV 号或 bilibili 链接，渲染在气泡内（.message-text）
+    try {
+        const content = message.content;
+        const bvid = window.BiliRenderer?.extractBV(content);
+
+        if (content && !message.is_recalled && bvid) {
+            // 提取链接中的参数
+            let params = {};
+            const urlMatch = content.match(/https?:\/\/[^\s]+/i); // 简单的非空白符匹配
+            if (urlMatch) {
+                try {
+                    // 清理链接末尾可能的中文符号
+                    const cleanUrl = urlMatch[0].replace(/[）〉】]$/g, '');
+                    const urlObj = new URL(cleanUrl);
+
+                    // 映射 B 站特有参数
+                    urlObj.searchParams.forEach((v, k) => {
+                        // 只有官方文档支持的参数才转换并传入
+                        const supported = ['p', 't', 'autoplay', 'danmaku', 'muted'];
+                        if (supported.includes(k)) {
+                            params[k] = isNaN(Number(v)) ? v : Number(v);
+                        }
+                    });
+                } catch (e) { /* 忽略无效 URL */ }
+            }
+
+            // 查找或创建容器
+            const contentEl = messageElement.querySelector('.message-content');
+            if (contentEl) {
+                let textEl = contentEl.querySelector('.message-text') || (() => {
+                    const div = document.createElement('div');
+                    div.className = 'message-text';
+                    const actions = contentEl.querySelector('.message-actions');
+                    actions ? contentEl.insertBefore(div, actions) : contentEl.appendChild(div);
+                    return div;
+                })();
+
+                // 渲染
+                const biliContainer = document.createElement('div');
+                biliContainer.className = 'bili-video';
+                biliContainer.style.marginTop = '8px'; // 增加一点顶部间距
+
+                const element = window.BiliRenderer.getElement(bvid, params);
+                if (element) {
+                    biliContainer.appendChild(element);
+                    textEl.appendChild(biliContainer);
+                }
+            }
+        }
+    } catch (e) {
+        console.error('B站渲染插件异常:', e);
+    }
 
     setTimeout(() => {
         messageElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
