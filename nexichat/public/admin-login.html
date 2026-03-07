@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录 - NEXI 管理后台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #f6f6f8;
+            --admin-card: #ffffff;
+            --admin-border: #e5e5ea;
+            --admin-text: #1d1d1f;
+            --admin-text-secondary: #6e6e73;
+            --admin-primary: #0071e3;
+            --admin-primary-hover: #0077ed;
+            --admin-danger: #ff3b30;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--admin-bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--admin-card);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 40px;
+            border: 1px solid var(--admin-border);
+        }
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--admin-text);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--admin-text-secondary);
+            margin-bottom: 28px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--admin-text-secondary);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+        }
+        .form-group input::placeholder { color: #8e8e93; }
+        .error-message {
+            font-size: 13px;
+            color: var(--admin-danger);
+            margin-bottom: 16px;
+            min-height: 20px;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--admin-primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--admin-primary-hover); }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--admin-text-secondary);
+            text-decoration: none;
+        }
+        .back-link:hover { color: var(--admin-primary); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1 class="login-title">管理员登录</h1>
+        <p class="login-subtitle">NEXI 管理后台</p>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" placeholder="请输入管理员用户名" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入管理员密码" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="loginBtn">登录</button>
+        <a href="index.html" class="back-link">返回聊天页面</a>
+    </div>
+    <script src="js/admin-auth.js"></script>
+</body>
+</html>

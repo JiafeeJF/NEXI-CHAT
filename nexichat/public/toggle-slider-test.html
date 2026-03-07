@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滑块开关测试</title>
+    <style>
+        /* 模拟 .form-group input 的干扰样式（与 style.css 一致） */
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #f5f5f7;
+        }
+        .form-group { margin-bottom: 15px; }
+
+        /* 滑块样式（与 style.css 一致） */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input[type="checkbox"],
+        .form-group .toggle-switch input[type="checkbox"] {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            position: absolute !important;
+            clip: rect(0, 0, 0, 0) !important;
+            clip-path: inset(50%) !important;
+            overflow: hidden !important;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #c7c7cc;
+            transition: 0.3s ease;
+            border-radius: 28px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 3px; top: 3px;
+            background-color: #fff;
+            transition: 0.3s ease;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background-color: #34c759; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+        .channel-toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+        .channel-toggle-name { font-size: 14px; color: #333; font-weight: 500; }
+
+        body { font-family: sans-serif; padding: 40px; max-width: 400px; }
+        h1 { font-size: 18px; margin-bottom: 24px; }
+        .test-section { margin-bottom: 32px; padding: 16px; border: 1px solid #eee; border-radius: 12px; }
+        .test-section h2 { font-size: 14px; color: #666; margin-bottom: 12px; }
+        #log { margin-top: 24px; padding: 12px; background: #f5f5f7; border-radius: 8px; font-size: 13px; min-height: 60px; }
+    </style>
+</head>
+<body>
+    <h1>滑块开关测试页</h1>
+
+    <div class="test-section">
+        <h2>当前结构：在 .form-group 内（可能被干扰）</h2>
+        <div class="form-group">
+            <label class="channel-toggle-container">
+                <span class="channel-toggle-name">消息免打扰</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="test1" class="test-checkbox">
+                    <span class="toggle-slider"></span>
+                </label>
+            </label>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>推荐结构：不在 .form-group 内</h2>
+        <div class="channel-toggle-container">
+            <span class="channel-toggle-name">消息免打扰</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="test2" class="test-checkbox">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <div id="log">点击上方开关，状态会显示在这里。</div>
+
+    <script>
+        const log = document.getElementById('log');
+        function report(id, checked) {
+            log.textContent = `开关 ${id} 当前: ${checked ? '开启' : '关闭'}`;
+        }
+        document.querySelectorAll('.test-checkbox').forEach(function (el) {
+            el.addEventListener('change', function () { report(this.id, this.checked); });
+        });
+    </script>
+</body>
+</html>

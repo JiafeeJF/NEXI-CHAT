@@ -1,0 +1,48 @@
+{
+  "name": "nexi-chat",
+  "version": "2.2.0",
+  "description": "一个基于 Node.js 开发的多频道聊天应用。",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JiafeeJF/NEXI-CHAT.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test tests/validation.test.js",
+    "dev": "nodemon index.js",
+    "reset-data": "node scripts/reset-data.js",
+    "frontend": "cd scripts && node frontend-server.js",
+    "dev-frontend": "cd scripts && nodemon frontend-server.js",
+    "start-all": "concurrently \"node index.js\" \"cd scripts && node frontend-server.js\"",
+    "launch": "node scripts/launcher.js",
+    "install-deps": "npm install",
+    "generate-cert": "cd scripts && node generate-cert.js"
+  },
+  "keywords": [
+    "chat",
+    "lan",
+    "socket.io",
+    "express",
+    "responsive"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "express-http-proxy": "^2.1.2",
+    "http-proxy": "^1.18.1",
+    "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.6",
+    "socket.io": "^4.6.1",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

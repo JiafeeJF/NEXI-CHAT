@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXI CHAT</title>
+
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="css/layout.css">
+    <style>
+        .channel-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background-color: #f0f2f5;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        .fa-loaded .channel-icon i {
+            font-size: 14px;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+        }
+
+        .fa-loaded .channel-icon .fa-lock {
+            font-size: 14px;
+        }
+    </style>
+
+    <script>
+        (function () {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+            link.onload = function () {
+                document.documentElement.classList.add('fa-loaded');
+                console.log('Font Awesome加载完成，已切换为图标样式');
+            };
+            link.onerror = function () {
+                console.log('Font Awesome加载失败，使用本地CSS数字样式');
+            };
+            document.head.appendChild(link);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="NEXI CHAT" class="app-title">
+                <div class="sidebar-header-actions">
+                    <button id="settingsBtn" class="settings-btn" title="设置">⚙️</button>
+                    <button id="addFriendBtn" class="settings-btn add-friend-btn" title="添加好友">
+                        ➕
+                        <span id="friendRequestBadge" class="badge-dot" aria-label="有新的好友申请" hidden></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar-container">
+                    <img id="userAvatar" src="images/default.png" alt="Avatar" class="avatar">
+                </div>
+                <div class="user-info">
+                    <h3 id="username">用户</h3>
+                    <p id="userBio" class="bio">这个人很懒，什么也没留下</p>
+                </div>
+            </div>
+
+            <div class="channels">
+                <h2 id="leftListTitle" class="section-title">频道</h2>
+                <div class="channel-list" id="leftListContainer">
+                    <div class="mode-toggle" id="modeToggle">
+                        <button id="modeChannelBtn" class="mode-btn active" type="button">频道</button>
+                        <button id="modeDmBtn" class="mode-btn mode-dm-btn" type="button">私聊<span id="dmUnreadBadge" class="badge-dot" aria-label="未读私聊消息" hidden></span></button>
+                    </div>
+                    <div id="channelListPanel" class="list-panel">
+                    <div class="channel-item" data-channel="General">
+                        <span class="channel-icon">1<i class="fa-solid fa-1" style="display: none;"></i></span>
+                        <span class="channel-name">频道1</span>
+                    </div>
+                    <div class="channel-item" data-channel="Technology">
+                        <span class="channel-icon">2<i class="fa-solid fa-2" style="display: none;"></i></span>
+                        <span class="channel-name">频道2</span>
+                    </div>
+                    <div class="channel-item" data-channel="Gaming">
+                        <span class="channel-icon">3<i class="fa-solid fa-3" style="display: none;"></i></span>
+                        <span class="channel-name">频道3</span>
+                    </div>
+                    <div class="channel-item" data-channel="Music">
+                        <span class="channel-icon">4<i class="fa-solid fa-4" style="display: none;"></i></span>
+                        <span class="channel-name">频道4</span>
+                    </div>
+                    <div class="channel-item" data-channel="Random">
+                        <span class="channel-icon">5<i class="fa-solid fa-5" style="display: none;"></i></span>
+                        <span class="channel-name">频道5</span>
+                    </div>
+                    <div class="channel-item" data-channel="Channel6">
+                        <span class="channel-icon">6<i class="fa-solid fa-6" style="display: none;"></i></span>
+                        <span class="channel-name">频道6</span>
+                    </div>
+                    </div>
+                    <div id="friendsListPanel" class="list-panel is-hidden" aria-hidden="true">
+                        <div id="friendsEmptyState" class="left-empty-state" hidden>暂无好友</div>
+                        <div id="friendsList" class="friends-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="logoutBtn" class="logout-btn">退出登录</button>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <button type="button" id="mobileBackBtn" class="mobile-back-btn" aria-label="返回" title="返回">‹</button>
+                <button type="button" id="mobileMeBtn" class="mobile-me-btn" aria-label="个人信息" title="个人信息"><img id="mobileMeBtnAvatar" src="images/default.png" alt="" class="mobile-me-btn-avatar"></button>
+                <div class="current-channel">
+                    <img id="currentChannelAvatar" class="current-channel-avatar" src="images/default.png" alt="" style="display: none;">
+                    <h2 id="currentChannelName">请选择频道</h2>
+                </div>
+                <div class="chat-actions">
+                    <button id="channelMenuBtn" class="channel-menu-btn" type="button" title="聊天设置" aria-label="聊天设置" style="display: none;"><span class="channel-menu-icon"></span></button>
+                </div>
+                <div id="more" onclick="showMore();">
+                    <span>三</span>
+                </div>
+                <div id="mobileNav" class="nav" onclick="showMore();" hidden>
+                    <div class="card">
+                        <div class="user-profile">
+                            <div class="user-info">
+                                <div class="avatar-container">
+                                    <img onclick="openUserProfile(currentUser.id);" id="userAvatarMobile"
+                                        src="images/default.png" alt="Avatar" class="avatar">
+                                </div>
+                                <div>
+                                    <h3 id="usernameMobile">用户</h3>
+                                    <p id="userBioMobile" class="bio">这个人很懒，什么也没留下</p>
+                                </div>
+                            </div>
+                            <div class="sidebar-header-actions">
+                                <button onclick="settingsPanel.classList.add('open');" class="settings-btn" title="设置">⚙️</button>
+                                <button id="addFriendBtnMobile" class="settings-btn add-friend-btn" title="添加好友">
+                                    ➕
+                                    <span id="friendRequestBadgeMobile" class="badge-dot" aria-label="有新的好友申请" hidden></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="channel-list" id="leftListContainerMobile">
+                            <div class="mode-toggle" id="modeToggleMobile">
+                                <button id="modeChannelBtnMobile" class="mode-btn active" type="button">频道</button>
+                                <button id="modeDmBtnMobile" class="mode-btn mode-dm-btn" type="button">私聊<span id="dmUnreadBadgeMobile" class="badge-dot" aria-label="未读私聊消息" hidden></span></button>
+                            </div>
+                            <div id="channelListPanelMobile" class="list-panel">
+                            <div class="channel-item" data-channel="General">
+                                <span class="channel-icon">1<i class="fa-solid fa-1" style="display: none;"></i></span>
+                                <span class="channel-name">频道1</span>
+                            </div>
+                            <div class="channel-item" data-channel="Technology">
+                                <span class="channel-icon">2<i class="fa-solid fa-2" style="display: none;"></i></span>
+                                <span class="channel-name">频道2</span>
+                            </div>
+                            <div class="channel-item" data-channel="Gaming">
+                                <span class="channel-icon">3<i class="fa-solid fa-3" style="display: none;"></i></span>
+                                <span class="channel-name">频道3</span>
+                            </div>
+                            <div class="channel-item" data-channel="Music">
+                                <span class="channel-icon">4<i class="fa-solid fa-4" style="display: none;"></i></span>
+                                <span class="channel-name">频道4</span>
+                            </div>
+                            <div class="channel-item" data-channel="Random">
+                                <span class="channel-icon">5<i class="fa-solid fa-5" style="display: none;"></i></span>
+                                <span class="channel-name">频道5</span>
+                            </div>
+                            <div class="channel-item" data-channel="Channel6">
+                                <span class="channel-icon">6<i class="fa-solid fa-6" style="display: none;"></i></span>
+                                <span class="channel-name">频道6</span>
+                            </div>
+                            </div>
+                            <div id="friendsListPanelMobile" class="list-panel is-hidden" aria-hidden="true">
+                                <div id="friendsEmptyStateMobile" class="left-empty-state" hidden>暂无好友</div>
+                                <div id="friendsListMobile" class="friends-list"></div>
+                            </div>
+                        </div>
+                        <button id="logoutBtn" class="logout-btn">退出登录</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 手机端独立个人信息页（仅移动端显示） -->
+            <div id="mobileProfilePage" class="mobile-profile-page" aria-hidden="true">
+                <div class="mobile-profile-page-inner">
+                    <div class="mobile-profile-header">
+                        <h2>个人信息</h2>
+                        <button type="button" id="mobileProfilePageClose" class="mobile-profile-close" aria-label="关闭">✕</button>
+                    </div>
+                    <div class="mobile-profile-user">
+                        <div class="avatar-container">
+                            <img id="mobileProfileAvatar" src="images/default.png" alt="" class="avatar">
+                        </div>
+                        <h3 id="mobileProfileName">用户</h3>
+                        <p id="mobileProfileBio" class="bio">这个人很懒，什么也没留下</p>
+                    </div>
+                    <div class="mobile-profile-actions">
+                        <button type="button" id="mobileProfileSettingsBtn" class="mobile-profile-action-btn">
+                            <span class="mobile-profile-action-icon">⚙️</span>
+                            <span>个人设置</span>
+                        </button>
+                        <button type="button" id="mobileProfileAddFriendBtn" class="mobile-profile-action-btn">
+                            <span class="mobile-profile-action-icon">➕</span>
+                            <span>添加好友</span>
+                            <span id="mobileProfileFriendBadge" class="badge-dot" aria-label="有新的好友申请" hidden></span>
+                        </button>
+                        <button type="button" id="mobileProfileLogoutBtn" class="mobile-profile-action-btn mobile-profile-logout">
+                            <span class="mobile-profile-action-icon">🚪</span>
+                            <span>退出登录</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 手机端主区域直接显示频道/好友列表（替代空页面） -->
+            <div id="mobileListPanel" class="mobile-list-panel">
+                <div class="mode-toggle" id="modeToggleMain">
+                    <button id="modeChannelBtnMain" class="mode-btn active" type="button">频道</button>
+                    <button id="modeDmBtnMain" class="mode-btn mode-dm-btn" type="button">私聊<span id="dmUnreadBadgeMain" class="badge-dot" aria-label="未读私聊消息" hidden></span></button>
+                </div>
+                <div id="channelListPanelMain" class="list-panel channel-list">
+                    <div class="channel-item" data-channel="General"><span class="channel-icon">1<i class="fa-solid fa-1" style="display: none;"></i></span><span class="channel-name">频道1</span></div>
+                    <div class="channel-item" data-channel="Technology"><span class="channel-icon">2<i class="fa-solid fa-2" style="display: none;"></i></span><span class="channel-name">频道2</span></div>
+                    <div class="channel-item" data-channel="Gaming"><span class="channel-icon">3<i class="fa-solid fa-3" style="display: none;"></i></span><span class="channel-name">频道3</span></div>
+                    <div class="channel-item" data-channel="Music"><span class="channel-icon">4<i class="fa-solid fa-4" style="display: none;"></i></span><span class="channel-name">频道4</span></div>
+                    <div class="channel-item" data-channel="Random"><span class="channel-icon">5<i class="fa-solid fa-5" style="display: none;"></i></span><span class="channel-name">频道5</span></div>
+                    <div class="channel-item" data-channel="Channel6"><span class="channel-icon">6<i class="fa-solid fa-6" style="display: none;"></i></span><span class="channel-name">频道6</span></div>
+                </div>
+                <div id="friendsListPanelMain" class="list-panel is-hidden" aria-hidden="true">
+                    <div id="friendsEmptyStateMain" class="left-empty-state" hidden>暂无好友</div>
+                    <div id="friendsListMain" class="friends-list"></div>
+                </div>
+            </div>
+
+            <div id="messagesContainer" class="messages-container">
+            </div>
+
+            <div class="message-input-container">
+                <div class="input-tools">
+                    <label for="imageUpload" class="upload-btn">🖼️</label>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <button id="emojiBtn" class="emoji-btn">😊</button>
+                    <div id="emojiPicker" class="emoji-picker">
+                        <div class="emoji-grid">
+                            
+                        </div>
+                    </div>
+                    <button id="voiceBtn" class="voice-btn" title="发送语音">🎤</button>
+                    <div id="uploadProgress" class="upload-progress"></div>
+                </div>
+                <textarea id="messageInput" placeholder="输入消息..." autocomplete="off" rows="1"></textarea>
+                <button id="sendBtn" class="send-btn">发送</button>
+            </div>
+        </div>
+        <div id="settingsPanel" class="settings-panel">
+            <div class="settings-header">
+                <h2>个人设置</h2>
+                <button id="closeSettings" class="close-btn">✕</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h3>头像设置</h3>
+                    <div class="avatar-upload">
+                        <div class="avatar-preview">
+                            <img id="avatarPreview" src="images/default.png" alt="Avatar" class="avatar">
+                        </div>
+                        <label for="avatarInput" class="btn-secondary">上传头像</label>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>个人信息</h3>
+                    <div class="form-group">
+                        <label for="settingsUsername">用户名</label>
+                        <input type="text" id="settingsUsername" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsNickname">社交昵称</label>
+                        <input type="text" id="settingsNickname" placeholder="显示给其他用户的名字">
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsBio">个性签名</label>
+                        <textarea id="settingsBio" rows="3" placeholder="介绍一下自己吧..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsGender">性别</label>
+                        <select id="settingsGender">
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsEmail">邮箱</label>
+                        <input type="email" id="settingsEmail" placeholder="请输入邮箱">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>安全设置</h3>
+                    <div class="security-actions">
+                        <button id="changePasswordBtn" class="btn-secondary">更改密码</button>
+                    </div>
+                </div>
+
+                <div class="settings-section profile-add-friend-toggle-row">
+                    <div class="profile-add-friend-toggle-inner">
+                        <span class="channel-toggle-name">允许他人从个人资料添加我为好友</span>
+                        <label class="channel-menu-switch">
+                            <input type="checkbox" id="settingsAllowAddFriendFromProfile">
+                            <span class="channel-menu-switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>黑名单</h3>
+                    <button id="blacklistListBtn" class="btn-secondary" type="button">黑名单列表</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>账号注销</h3>
+                    <p class="deactivation-hint">注销后账号将被删除且无法恢复，请谨慎操作。提交后需管理员审核。</p>
+                    <button id="deactivationRequestBtn" class="btn-secondary" type="button">申请注销账号</button>
+                    <p id="deactivationRequestStatus" class="deactivation-status" style="display: none;"></p>
+                </div>
+            </div>
+            <div class="settings-actions-fixed">
+                <button id="saveSettings" class="btn-primary">保存设置</button>
+            </div>
+        </div>
+
+        <div id="channelMenuPanel" class="settings-panel channel-menu-panel">
+            <div class="settings-header">
+                <h2 id="channelMenuTitle">聊天设置</h2>
+                <button id="closeChannelMenu" class="close-btn" aria-label="关闭">✕</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-section channel-menu-mute-row">
+                    <div class="channel-menu-mute-row-inner">
+                        <span class="channel-toggle-name">消息免打扰</span>
+                        <label class="channel-menu-switch">
+                            <input type="checkbox" id="channelMuteSwitch">
+                            <span class="channel-menu-switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <button id="channelClearHistoryBtn" class="btn-secondary" type="button">清空聊天记录</button>
+                    <p class="channel-menu-hint">清空后以服务端时间为准，刷新/切频道/多标签均不恢复</p>
+                </div>
+                <div class="settings-section channel-menu-block-row" id="channelMenuBlockRow" style="display: none;">
+                    <button id="channelBlockBtn" class="btn-secondary" type="button">加入黑名单</button>
+                    <p class="channel-menu-hint">拉黑后对方无法给你发消息，你仍可给对方发消息</p>
+                </div>
+                <div class="settings-section channel-menu-delete-friend-row" id="channelMenuDeleteFriendRow" style="display: none;">
+                    <button id="channelDeleteFriendBtn" class="btn-secondary" type="button" style="border-color: #ff3b30; color: #ff3b30;">删除联系人</button>
+                    <p class="channel-menu-hint">删除后将从双方通讯录中移除，且无法恢复</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="passwordChangePanel" class="settings-panel">
+            <div class="settings-header">
+                <h2>更改密码</h2>
+                <button id="closePasswordPanel" class="close-btn">✕</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <form id="passwordChangeForm">
+                        <div class="form-group">
+                            <label for="currentPassword">当前密码</label>
+                            <input type="password" id="currentPassword" placeholder="请输入当前密码" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" placeholder="至少8位，含字母和数字" required minlength="8">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">确认新密码</label>
+                            <input type="password" id="confirmPassword" placeholder="请再次输入新密码" required>
+                        </div>
+                        <div class="settings-actions">
+                            <button type="submit" class="btn-primary">确认更改</button>
+                            <button type="button" id="cancelPasswordChange" class="btn-secondary">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="blacklistPanel" class="settings-panel">
+            <div class="settings-header">
+                <h2>黑名单列表</h2>
+                <button id="closeBlacklistPanel" class="close-btn">✕</button>
+            </div>
+            <div class="settings-content">
+                <div id="blacklistListEmpty" class="left-empty-state" hidden>暂无黑名单</div>
+                <div id="blacklistList" class="friends-list blacklist-list-container"></div>
+            </div>
+        </div>
+
+        <div id="deactivationRequestModal" class="profile-modal">
+            <div class="profile-content" style="max-width: 420px;">
+                <div class="profile-header">
+                    <h2>申请注销账号</h2>
+                    <button id="closeDeactivationRequestModal" class="close-btn">✕</button>
+                </div>
+                <div class="settings-content" style="padding: 20px;">
+                    <p class="deactivation-hint" style="margin-bottom: 12px;">注销后账号将被删除且无法恢复。请填写注销理由（必填，最多 200 字），提交后由管理员审核。</p>
+                    <div class="form-group">
+                        <label for="deactivationReason">注销理由</label>
+                        <textarea id="deactivationReason" rows="4" maxlength="200" placeholder="请简要说明注销原因..."></textarea>
+                        <span id="deactivationReasonCount" class="char-count">0 / 200</span>
+                    </div>
+                    <div class="settings-actions" style="margin-top: 16px;">
+                        <button id="submitDeactivationRequest" class="btn-primary" type="button">提交申请</button>
+                        <button id="cancelDeactivationRequest" class="btn-secondary" type="button">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div id="notificationContainer" class="notification-container"></div>
+
+        <div id="userProfileModal" class="profile-modal">
+            <div class="profile-content">
+                <div class="profile-header">
+                    <h2>用户资料</h2>
+                    <button id="closeProfileModal" class="close-btn">✕</button>
+                </div>
+                <div class="profile-info">
+                    <div class="avatar-container">
+                        <img id="profileAvatar" src="images/default.png" alt="Avatar" class="avatar">
+                    </div>
+                    <h3 id="profileUsername">社交昵称</h3>
+                    <p id="profileBio">个性签名</p>
+                    <p id="profileGender">性别</p>
+                    <p id="profileEmail">邮箱</p>
+                    <p id="profileJoined">加入时间</p>
+                    <div id="profileAddFriendArea" class="profile-add-friend-area" style="display: none;">
+                        <button type="button" id="profileAddFriendBtn" class="btn-primary">添加好友</button>
+                        <p id="profileAddFriendHint" class="profile-add-friend-hint" style="display: none;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="friendModal" class="profile-modal">
+            <div class="profile-content" style="max-width: 460px;">
+                <div class="profile-header">
+                    <h2>好友与私聊</h2>
+                    <button id="closeFriendModal" class="close-btn">✕</button>
+                </div>
+                <div class="settings-content friend-modal-content" style="padding: 20px 30px;">
+                    <div class="friend-add-steps">
+                        <div id="friendAddStep1" class="friend-add-step friend-add-step-active">
+                            <div class="settings-section">
+                                <h3>添加好友</h3>
+                                <div class="form-group">
+                                    <label for="friendIdentifierInput">用户名</label>
+                                    <input id="friendIdentifierInput" type="text" placeholder="例如：alice" autocomplete="username">
+                                </div>
+                                <div class="settings-actions" style="margin-top: 12px;">
+                                    <button id="friendAddNextBtn" class="btn-primary" type="button">下一步</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="friendAddStep2" class="friend-add-step">
+                            <div class="settings-section">
+                                <h3>填写申请理由</h3>
+                                <p id="friendAddStep2Target" class="friend-add-step-target">将向 <strong id="friendAddStep2Name"></strong> 发送好友申请</p>
+                                <div class="form-group">
+                                    <label for="friendReasonInput">添加理由（选填，最多 200 字）</label>
+                                    <textarea id="friendReasonInput" rows="3" maxlength="200" placeholder="介绍一下自己或说明添加原因..."></textarea>
+                                    <p id="friendReasonCount" class="friend-reason-count">0 / 200</p>
+                                </div>
+                                <div class="settings-actions" style="margin-top: 12px; display: flex; gap: 10px;">
+                                    <button id="friendAddBackBtn" class="btn-secondary" type="button">返回</button>
+                                    <button id="sendFriendRequestBtn" class="btn-primary" type="button">发送申请</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 10px;">
+                        <h3>新申请</h3>
+                        <div class="friend-requests-scroll">
+                            <div id="friendRequestsEmpty" class="left-empty-state" hidden>暂无新申请</div>
+                            <div id="friendRequestsList" class="friends-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="utils/bilibili_video.js"></script>
+    <script src="js/chat.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.documentElement.classList.contains('fa-loaded')) {
+                switchToFAIcons();
+            } else {
+                const observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
+                        if (mutation.attributeName === 'class' && document.documentElement.classList.contains('fa-loaded')) {
+                            switchToFAIcons();
+                            observer.disconnect();
+                        }
+                    });
+                });
+                observer.observe(document.documentElement, { attributes: true });
+            }
+
+            function switchToFAIcons() {
+                const channelIcons = document.querySelectorAll('.channel-icon');
+                channelIcons.forEach(icon => {
+                    if (icon.id === 'currentChannelIcon') return;
+                    icon.style.fontSize = '0';
+                    const faIcon = icon.querySelector('i');
+                    if (faIcon) {
+                        faIcon.style.display = 'inline-block';
+                        faIcon.style.fontSize = '14px';
+                    }
+                });
+            }
+
+            document.querySelectorAll('.channel-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const nameEl = this.querySelector('.channel-name');
+                    const channelNum = nameEl ? nameEl.textContent.replace(/^频道/, '') : '';
+                    const iconEl = document.getElementById('currentChannelIcon');
+                    if (!iconEl) return;
+                    iconEl.innerHTML = channelNum ? `${channelNum}<i class="fa-solid fa-${channelNum}" style="display: none;"></i>` : '';
+                    iconEl.style.fontSize = '';
+                    if (document.documentElement.classList.contains('fa-loaded')) {
+                        var fa = iconEl.querySelector('i');
+                        if (fa) {
+                            iconEl.style.fontSize = '0';
+                            fa.style.display = 'inline-block';
+                            fa.style.fontSize = '14px';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

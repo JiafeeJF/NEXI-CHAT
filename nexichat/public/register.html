@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>注册 - NEXI CHAT账号</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <!-- 注册阶段 -->
+    <div class="register-phase" id="registerPhase">
+        <div class="container">
+            <span></span>
+            <span></span>
+            <span></span>
+            <div class="version-info" id="versionInfo"></div>
+            <div class="login-container">
+                <div class="image-container">
+                    <img src="images/bg2.png" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 0 0 20px;">
+                </div>
+                <div class="login-box">
+                    <div class="logo">
+                        <img id="registerLogo" src="images/logo.png" alt="NEXI CHAT" class="login-logo">
+                        <h2>创建NEXI CHAT账号</h2>
+                    </div>
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" name="username" required autofocus placeholder="2-20位，字母/数字/下划线">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" name="password" required placeholder="8位以上，含字母和数字">
+                        </div>
+                        <button type="submit" class="btn-primary">注册</button>
+                    </form>
+                    <p class="register-link">已有账号？<a href="login.html">立即登录</a></p>
+                    <div id="errorMessage" class="error-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圆形遮罩：注册成功后盖住画面再收缩消失 -->
+    <div class="setup-reveal-mask" id="revealMask"></div>
+
+    <!-- 完善资料阶段 -->
+    <div class="setup-phase" id="setupPhase">
+        <header class="setup-top">
+            <img src="images/logo.png" alt="NEXI CHAT" class="logo">
+            <a href="index.html" class="setup-skip-link">暂不设置</a>
+        </header>
+        <main class="setup-main">
+            <section class="setup-step active" data-step="0">
+                <div class="setup-step-content">
+                    <h2>设置头像</h2>
+                    <p class="sub">上传一张照片，让他人更容易认出你</p>
+                    <div class="field-wrap avatar-step-inner">
+                        <label for="avatarInput" class="avatar-ring">
+                            <img id="avatarPreview" src="images/default.png" alt="头像">
+                        </label>
+                        <label for="avatarInput" class="btn-avatar">更换头像</label>
+                        <input type="file" id="avatarInput" accept="image/*">
+                    </div>
+                </div>
+            </section>
+            <section class="setup-step" data-step="1">
+                <div class="setup-step-content">
+                    <h2>社交昵称与邮箱</h2>
+                    <p class="sub">其他用户将看到你的昵称</p>
+                    <div class="field-wrap" style="margin-bottom: 20px;">
+                        <label for="nickname">社交昵称</label>
+                        <input type="text" id="nickname" placeholder="默认为用户名" autocomplete="off">
+                    </div>
+                    <div class="field-wrap">
+                        <label for="email">邮箱（可选）</label>
+                        <input type="email" id="email" placeholder="请输入邮箱" autocomplete="email">
+                    </div>
+                </div>
+            </section>
+            <section class="setup-step" data-step="2">
+                <div class="setup-step-content">
+                    <h2>个性签名</h2>
+                    <p class="sub">用一句话介绍自己</p>
+                    <div class="field-wrap">
+                        <label for="bio">个性签名</label>
+                        <textarea id="bio" placeholder="介绍一下自己吧..." rows="4"></textarea>
+                    </div>
+                </div>
+            </section>
+            <section class="setup-step" data-step="3">
+                <div class="setup-step-content">
+                    <h2>性别</h2>
+                    <p class="sub">选一项即可，可随时在设置中修改</p>
+                    <div class="field-wrap">
+                        <div class="gender-options">
+                            <input type="radio" name="gender" id="g_male" value="male">
+                            <label for="g_male" class="option">男</label>
+                            <input type="radio" name="gender" id="g_female" value="female">
+                            <label for="g_female" class="option">女</label>
+                            <input type="radio" name="gender" id="g_other" value="other" checked>
+                            <label for="g_other" class="option">其他</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <div class="setup-nav">
+            <div class="setup-progress" id="progress">
+                <span class="dot active" data-step="0"></span>
+                <span class="dot" data-step="1"></span>
+                <span class="dot" data-step="2"></span>
+                <span class="dot" data-step="3"></span>
+            </div>
+            <div class="setup-nav-btns">
+                <button type="button" class="btn btn-back" id="btnBack" disabled>上一步</button>
+                <button type="button" class="btn btn-next" id="btnNext">下一步</button>
+            </div>
+        </div>
+        <div class="setup-error" id="setupErrorMessage"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

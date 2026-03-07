@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除存储数据</title>
+</head>
+<body>
+    <h1>清除未读消息存储数据</h1>
+    <button onclick="clearUnreadCounts()">清除未读消息计数</button>
+    <button onclick="clearAllStorage()">清除所有存储数据</button>
+    <div id="result"></div>
+
+    <script>
+        function clearUnreadCounts() {
+            localStorage.removeItem('unreadCounts');
+            document.getElementById('result').innerText = '已清除未读消息计数';
+            console.log('未读消息计数已清除');
+        }
+
+        function clearAllStorage() {
+            localStorage.clear();
+            document.getElementById('result').innerText = '已清除所有存储数据';
+            console.log('所有存储数据已清除');
+        }
+
+        // 检查当前存储的数据
+        console.log('当前未读消息计数:', localStorage.getItem('unreadCounts'));
+        console.log('当前通知设置:', localStorage.getItem('notificationSettings'));
+    </script>
+</body>
+</html>

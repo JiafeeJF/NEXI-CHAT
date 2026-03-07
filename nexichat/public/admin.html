@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 - NEXI 管理后台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #f6f6f8;
+            --admin-card: #ffffff;
+            --admin-border: #e5e5ea;
+            --admin-text: #1d1d1f;
+            --admin-text-secondary: #6e6e73;
+            --admin-primary: #2c2c2e;
+            --admin-primary-hover: #1d1d1f;
+            --admin-danger: #ff3b30;
+            --admin-danger-hover: #ff453a;
+            --admin-success: #34c759;
+            --admin-success-hover: #30d158;
+            --admin-sidebar-bg: #1d1d1f;
+            --admin-sidebar-text: rgba(255,255,255,0.85);
+            --admin-sidebar-active: rgba(255,255,255,0.12);
+            --admin-radius: 12px;
+            --admin-radius-sm: 8px;
+            --admin-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            --admin-shadow-hover: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .admin-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: var(--admin-sidebar-bg);
+            color: var(--admin-sidebar-text);
+            padding: 24px 0;
+        }
+        .admin-sidebar-brand {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 16px;
+        }
+        .admin-sidebar-brand h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+        .admin-sidebar-brand span { opacity: 0.7; font-weight: 400; font-size: 13px; }
+        .admin-nav {
+            list-style: none;
+        }
+        .admin-nav-item {
+            margin: 2px 12px;
+            border-radius: var(--admin-radius-sm);
+        }
+        .admin-nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            color: var(--admin-sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: var(--admin-radius-sm);
+            transition: background 0.2s;
+        }
+        .admin-nav-item a:hover { background: var(--admin-sidebar-active); color: #fff; }
+        .admin-nav-item.active a { background: var(--admin-sidebar-active); color: #fff; }
+        .admin-nav-icon { font-size: 18px; opacity: 0.9; }
+        .admin-section { display: none; }
+        .admin-section.is-active { display: block; }
+        .admin-main {
+            flex: 1;
+            padding: 32px 40px 48px;
+            overflow-x: hidden;
+        }
+        .admin-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .admin-topbar h2 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--admin-text);
+        }
+        .admin-topbar-actions { display: flex; align-items: center; gap: 12px; }
+        .admin-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--admin-radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            font-family: inherit;
+        }
+        .admin-btn-primary { background: var(--admin-primary); color: #fff; }
+        .admin-btn-primary:hover { background: var(--admin-primary-hover); }
+        .admin-btn-ghost { background: transparent; color: var(--admin-text-secondary); }
+        .admin-btn-ghost:hover { background: var(--admin-border); color: var(--admin-text); }
+        .admin-btn-danger { background: var(--admin-danger); color: #fff; }
+        .admin-btn-danger:hover { background: var(--admin-danger-hover); }
+        .admin-btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .admin-card {
+            background: var(--admin-card);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .admin-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--admin-text);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .admin-form-group { margin-bottom: 18px; }
+        .admin-form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+        }
+        .admin-form-group input {
+            width: 100%;
+            max-width: 320px;
+            padding: 10px 14px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .admin-form-group input:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+        }
+        .admin-alert {
+            padding: 12px 16px;
+            border-radius: var(--admin-radius-sm);
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+        .admin-alert.show { display: block; }
+        .admin-alert-success { background: #e8f8ee; color: #1e7e34; border: 1px solid #b8e6c8; }
+        .admin-alert-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .admin-table-wrap {
+            overflow-x: auto;
+            border-radius: var(--admin-radius-sm);
+            border: 1px solid var(--admin-border);
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .admin-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--admin-text-secondary);
+            background: #fafafa;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .admin-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--admin-border);
+            vertical-align: middle;
+        }
+        .admin-table tbody tr:last-child td { border-bottom: none; }
+        .admin-table tbody tr:hover { background: #fafafa; }
+        .admin-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .admin-badge-normal { background: #e8e8ed; color: var(--admin-text-secondary); }
+        .admin-badge-banned { background: #ffebee; color: var(--admin-danger); }
+        .admin-table .admin-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+        .admin-table .ban-btn { background: #ffebee; color: var(--admin-danger); border: 1px solid #ffcdd2; }
+        .admin-table .ban-btn:hover { background: #ffcdd2; }
+        .admin-table .unban-btn { background: #e8f8ee; color: var(--admin-success); border: 1px solid #b8e6c8; }
+        .admin-table .unban-btn:hover { background: #b8e6c8; }
+        .admin-table .delete-user-btn {
+            background: var(--admin-danger) !important;
+            color: #fff !important;
+        }
+        .admin-table .delete-user-btn:hover { background: var(--admin-danger-hover) !important; }
+        .admin-log-toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .admin-log-toolbar .admin-form-group { margin-bottom: 0; }
+        .admin-log-toolbar .admin-form-group input { max-width: none; min-width: 200px; }
+        .admin-log-list {
+            background: #fafafa;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            margin-bottom: 16px;
+        }
+        .admin-log-list-header {
+            display: flex;
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--admin-text-secondary);
+            background: #f5f5f7;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .admin-log-list-body { max-height: 480px; overflow-y: auto; }
+        .admin-log-row {
+            display: flex;
+            padding: 10px 16px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--admin-border);
+            align-items: center;
+        }
+        .admin-log-row:last-child { border-bottom: none; }
+        .admin-log-row:hover { background: #fff; }
+        .log-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .log-type-chat { background: #e3f2fd; color: #1565c0; }
+        .log-type-audit { background: #f3e5f5; color: #6a1b9a; }
+        .log-type-user_login { background: #e8f5e9; color: #2e7d32; }
+        .log-type-user_register { background: #e0f7fa; color: #00695c; }
+        .log-type-message_recall { background: #fff3e0; color: #e65100; }
+        .log-type-user_connect { background: #e8eaf6; color: #3949ab; }
+        .log-type-user_disconnect { background: #eceff1; color: #546e7a; }
+        .log-type-default { background: #f5f5f5; color: #616161; }
+        .admin-log-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .admin-log-modal.show { display: flex; }
+        .admin-log-modal-content {
+            background: var(--admin-card);
+            border-radius: var(--admin-radius);
+            max-width: 640px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+        }
+        .admin-log-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--admin-border);
+            font-weight: 600;
+        }
+        .admin-log-modal-body {
+            padding: 16px 20px;
+            overflow: auto;
+            flex: 1;
+        }
+        .admin-log-modal-body pre {
+            margin: 0;
+            font-size: 12px;
+            font-family: ui-monospace, monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .admin-log-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--admin-border);
+        }
+        .admin-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--admin-text-secondary);
+        }
+        .admin-pagination-btns { display: flex; align-items: center; gap: 8px; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            color: var(--admin-primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .admin-stat-card {
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            padding: 20px;
+        }
+        .admin-stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--admin-text); letter-spacing: -0.02em; }
+        .admin-stat-card .stat-label { font-size: 12px; color: var(--admin-text-secondary); margin-top: 4px; }
+        .admin-meta { font-size: 13px; color: var(--admin-text-secondary); margin-bottom: 20px; }
+        .admin-meta span { margin-right: 20px; }
+        .admin-danger-zone { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--admin-border); }
+        .admin-danger-zone .admin-card-title { margin-bottom: 12px; }
+        .admin-user-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .admin-user-toolbar .admin-form-group { margin-bottom: 0; }
+        .admin-user-toolbar input { max-width: 240px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.admin-nav-item').forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var sectionId = this.getAttribute('data-section');
+                    if (!sectionId) return;
+                    document.querySelectorAll('.admin-nav-item').forEach(function(n) { n.classList.remove('active'); });
+                    this.classList.add('active');
+                    document.querySelectorAll('.admin-section').forEach(function(s) { s.classList.remove('is-active'); });
+                    var section = document.getElementById(sectionId);
+                    if (section) section.classList.add('is-active');
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-brand">
+                <h1>NEXI <span>管理后台</span></h1>
+            </div>
+            <nav>
+                <ul class="admin-nav">
+                    <li class="admin-nav-item active" data-section="sectionUsers"><a href="#"><span class="admin-nav-icon">👥</span>用户管理</a></li>
+                    <li class="admin-nav-item" data-section="sectionPassword"><a href="#"><span class="admin-nav-icon">🔐</span>密码管理</a></li>
+                    <li class="admin-nav-item" data-section="sectionLogs"><a href="#"><span class="admin-nav-icon">📋</span>日志管理</a></li>
+                    <li class="admin-nav-item" data-section="sectionDeactivation"><a href="#"><span class="admin-nav-icon">📝</span>注销申请</a></li>
+                    <li class="admin-nav-item" data-section="sectionSettings"><a href="#"><span class="admin-nav-icon">⚙️</span>设置</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="admin-main">
+            <div class="admin-topbar">
+                <h2>控制台</h2>
+                <div class="admin-topbar-actions">
+                    <a href="/index.html" class="admin-btn admin-btn-ghost">返回聊天</a>
+                    <button type="button" class="admin-btn admin-btn-danger" id="logoutBtn">退出登录</button>
+                </div>
+            </div>
+
+            <div class="admin-alert admin-alert-success" id="successMessage"></div>
+            <div class="admin-alert admin-alert-error" id="errorMessage"></div>
+
+            <section class="admin-card admin-section" id="sectionPassword">
+                <h3 class="admin-card-title">管理员密码</h3>
+                <form id="adminPasswordForm">
+                    <div class="admin-form-group">
+                        <label for="currentPassword">当前密码</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required placeholder="请输入当前密码">
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="newPassword">新密码</label>
+                        <input type="password" id="newPassword" name="newPassword" required placeholder="请输入新密码">
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="confirmNewPassword">确认新密码</label>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" required placeholder="再次输入新密码">
+                    </div>
+                    <button type="submit" class="admin-btn admin-btn-primary">更新密码</button>
+                </form>
+            </section>
+
+            <section class="admin-card admin-section is-active" id="sectionUsers">
+                <h3 class="admin-card-title">用户列表</h3>
+                <div class="admin-user-toolbar">
+                    <div class="admin-form-group">
+                        <label for="adminUserSearch">搜索用户</label>
+                        <input type="text" id="adminUserSearch" placeholder="按 ID、用户名、昵称搜索">
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>昵称</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUserListBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="admin-card admin-section" id="sectionLogs">
+                <h3 class="admin-card-title">日志查询</h3>
+                <div class="admin-log-toolbar">
+                    <div class="admin-form-group" style="min-width: 200px;">
+                        <label>日志文件</label>
+                        <select id="logFileSelect" style="width:100%;padding:10px 14px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:14px;background:#fff;">
+                            <option value="">加载中...</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group" style="min-width: 140px;">
+                        <label>类型</label>
+                        <select id="logTypeSelect" style="width:100%;padding:10px 14px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:14px;background:#fff;">
+                            <option value="">全部</option>
+                            <option value="chat">聊天</option>
+                            <option value="audit">审计</option>
+                            <option value="user_login">登录</option>
+                            <option value="user_register">注册</option>
+                            <option value="user_connect">连接</option>
+                            <option value="user_disconnect">断开</option>
+                            <option value="message_recall">撤回消息</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group" style="min-width: 220px;">
+                        <label>关键词</label>
+                        <input type="text" id="logSearchInput" placeholder="搜索日志内容...">
+                    </div>
+                    <div class="admin-form-group" style="min-width: 100px;">
+                        <label>每页</label>
+                        <select id="logLimitSelect" style="width:100%;padding:10px 14px;border:1px solid var(--admin-border);border-radius:var(--admin-radius-sm);font-size:14px;background:#fff;">
+                            <option value="20">20 条</option>
+                            <option value="50" selected>50 条</option>
+                            <option value="100">100 条</option>
+                        </select>
+                    </div>
+                    <button type="button" class="admin-btn admin-btn-primary" id="logSearchBtn">查询</button>
+                </div>
+                <div class="admin-log-list">
+                    <div class="admin-log-list-header">
+                        <div style="width:14%;">时间</div>
+                        <div style="width:10%;">类型</div>
+                        <div style="width:10%;">用户</div>
+                        <div style="width:10%;">频道</div>
+                        <div style="width:41%;">内容</div>
+                        <div style="width:15%;">操作</div>
+                    </div>
+                    <div class="admin-log-list-body" id="logList">
+                        <div style="text-align:center;padding:48px 16px;color:var(--admin-text-secondary);font-size:13px;">请选择日志文件后点击「查询」</div>
+                    </div>
+                </div>
+                <div class="admin-pagination">
+                    <span>共 <strong id="logTotal">0</strong> 条</span>
+                    <div class="admin-pagination-btns">
+                        <button type="button" class="admin-btn admin-btn-ghost" id="logPrevPage">上一页</button>
+                        <span style="padding:0 8px;">第 <span id="logCurrentPage">1</span> / <span id="logTotalPages">1</span> 页</span>
+                        <button type="button" class="admin-btn admin-btn-ghost" id="logNextPage">下一页</button>
+                    </div>
+                </div>
+                <div class="admin-log-modal" id="logDetailModal">
+                    <div class="admin-log-modal-content">
+                        <div class="admin-log-modal-header">日志详情</div>
+                        <div class="admin-log-modal-body"><pre id="logDetailPre"></pre></div>
+                        <div class="admin-log-modal-footer">
+                            <button type="button" class="admin-btn admin-btn-ghost" id="logDetailCopyBtn">复制</button>
+                            <button type="button" class="admin-btn admin-btn-primary" id="logDetailCloseBtn">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-card admin-section" id="sectionDeactivation">
+                <h3 class="admin-card-title">注销申请</h3>
+                <p style="font-size: 13px; color: var(--admin-text-secondary); margin-bottom: 12px;">用户提交的账号注销申请，通过后将删除该用户账号。</p>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户</th>
+                                <th>理由</th>
+                                <th>状态</th>
+                                <th>申请时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminDeactivationListBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 12px;">
+                    <button type="button" class="admin-btn admin-btn-ghost" id="adminDeactivationRefreshBtn">刷新列表</button>
+                </div>
+                <div class="admin-log-modal" id="deactivationReasonModal">
+                    <div class="admin-log-modal-content" style="max-width: 420px;">
+                        <div class="admin-log-modal-header">注销理由</div>
+                        <div class="admin-log-modal-body"><p id="deactivationReasonModalBody" style="margin:0; white-space: pre-wrap; word-break: break-word;"></p></div>
+                        <div class="admin-log-modal-footer">
+                            <button type="button" class="admin-btn admin-btn-primary" id="deactivationReasonModalClose">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-card admin-section" id="sectionSettings">
+                <h3 class="admin-card-title">危险操作</h3>
+                <div class="admin-danger-zone" style="border: none; padding: 0; margin: 0;">
+                    <p style="font-size: 13px; color: var(--admin-text-secondary); margin-bottom: 12px;">清空后，所有频道与私聊消息将不可恢复，请谨慎操作。</p>
+                    <button type="button" class="admin-btn admin-btn-danger" id="adminResetMessagesBtn">清空全部消息</button>
+                </div>
+            </section>
+
+            <a href="/index.html" class="back-link">← 返回聊天页面</a>
+        </main>
+    </div>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="js/admin-management.js"></script>
+</body>
+</html>

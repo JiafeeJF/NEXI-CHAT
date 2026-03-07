@@ -1,0 +1,799 @@
+/**
+ * 手机端适配样式：320px ~ 768px
+ * 使用 @media 响应式，禁止横向滚动，触控区域≥44px，图片自适应，单列/弹性布局
+ */
+
+/* ========== 全局：禁止横向滚动、基础适配 ========== */
+html {
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+/* ========== 图片自适应（全站） ========== */
+img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* 手机端主区域列表、返回按钮：桌面端不显示 */
+.mobile-list-panel {
+    display: none;
+}
+
+.mobile-back-btn {
+    display: none;
+}
+
+.mobile-me-btn {
+    display: none;
+}
+
+.mobile-profile-page {
+    display: none;
+}
+
+/* ========== 320px ~ 768px 手机端 ========== */
+@media screen and (max-width: 768px) {
+    /* 主区域列表：无选中时显示，有选中时隐藏 */
+    .mobile-list-panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 16px;
+        background: #f5f5f7;
+    }
+
+    .chat-container:not(.mobile-has-selection) .mobile-list-panel {
+        display: flex;
+    }
+
+    .chat-container:not(.mobile-has-selection) .messages-container {
+        display: none !important;
+    }
+
+    .chat-container.mobile-has-selection .mobile-list-panel {
+        display: none !important;
+    }
+
+    .chat-container.mobile-has-selection .messages-container {
+        display: flex !important;
+    }
+
+    /* 根字体与间距基准 */
+    html {
+        font-size: clamp(14px, 2.5vw + 10px, 16px);
+    }
+
+    body {
+        line-height: 1.5;
+    }
+
+    /* 登录/注册页：单列布局 */
+    .container {
+        padding: 12px;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .login-container {
+        flex-direction: column;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .video-container,
+    .image-container {
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .video-container img,
+    .image-container img {
+        border-radius: 16px 16px 0 0;
+    }
+
+    .login-box {
+        max-width: 100%;
+        width: 100%;
+        padding: clamp(20px, 5vw, 32px);
+        border-radius: 16px;
+    }
+
+    .logo h1 {
+        font-size: clamp(28px, 8vw, 40px);
+    }
+
+    .logo h2 {
+        font-size: clamp(18px, 4.5vw, 22px);
+        margin-bottom: clamp(16px, 4vw, 24px);
+    }
+
+    .form-group {
+        margin-bottom: clamp(12px, 3vw, 18px);
+    }
+
+    .form-group label {
+        font-size: clamp(13px, 3.2vw, 15px);
+    }
+
+    .form-group input {
+        padding: clamp(12px, 3vw, 14px) clamp(14px, 3.5vw, 18px);
+        font-size: 16px; /* 防止 iOS 缩放 */
+        min-height: 44px;
+    }
+
+    .btn-primary {
+        min-height: 44px;
+        padding: clamp(12px, 3vw, 16px);
+        font-size: clamp(14px, 3.5vw, 16px);
+    }
+
+    .btn-secondary {
+        min-height: 44px;
+        min-width: 44px;
+        padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 22px);
+        font-size: clamp(13px, 3.2vw, 15px);
+    }
+
+    .register-link,
+    .error-message {
+        font-size: clamp(13px, 3.2vw, 14px);
+    }
+
+    /* ========== 主应用：侧栏隐藏、聊天区全宽 ========== */
+    .app-container {
+        flex-direction: column;
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .chat-container {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .chat-header {
+        padding: clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .current-channel {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .current-channel h2 {
+        font-size: clamp(16px, 4vw, 18px);
+    }
+
+    .current-channel-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .current-channel .channel-icon {
+        font-size: 18px;
+    }
+
+    .channel-menu-btn {
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
+    }
+
+    /* 手机端：右上角「三」隐藏；列表页左上角「我」，聊天页左上角「‹」 */
+    #more {
+        display: none !important;
+    }
+
+    .mobile-me-btn {
+        display: none;
+    }
+
+    .chat-container:not(.mobile-has-selection) .mobile-me-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        margin: 0 4px 0 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-me-btn-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .chat-container.mobile-has-selection .mobile-back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0;
+        margin: 0 4px 0 0;
+        border: none;
+        background: none;
+        font-size: 28px;
+        line-height: 1;
+        color: #1d1d1f;
+        cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .chat-container.mobile-has-selection .mobile-me-btn {
+        display: none !important;
+    }
+
+    /* 手机端独立个人信息页 */
+    .mobile-profile-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        overflow-y: auto;
+        padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+
+    .mobile-profile-page.open {
+        display: flex;
+    }
+
+    .mobile-profile-page-inner {
+        width: 100%;
+        max-width: 100%;
+        min-height: 100%;
+        background: #f5f5f7;
+    }
+
+    .mobile-profile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: white;
+        border-bottom: 1px solid #d2d2d7;
+    }
+
+    .mobile-profile-header h2 {
+        font-size: 17px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .mobile-profile-close {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0;
+        border: none;
+        background: none;
+        font-size: 20px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-profile-user {
+        padding: 24px 16px;
+        background: white;
+        text-align: center;
+        border-bottom: 1px solid #e5e5ea;
+    }
+
+    .mobile-profile-user .avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .mobile-profile-user h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 12px 0 6px;
+    }
+
+    .mobile-profile-user .bio {
+        font-size: 14px;
+        color: #6e6e73;
+        margin: 0;
+        max-width: 100%;
+    }
+
+    .mobile-profile-actions {
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .mobile-profile-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-height: 52px;
+        padding: 0 16px;
+        border: none;
+        border-radius: 12px;
+        background: white;
+        font-size: 16px;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-profile-action-btn:active {
+        background: #f0f0f0;
+    }
+
+    .mobile-profile-action-icon {
+        font-size: 20px;
+    }
+
+    .mobile-profile-action-btn .badge-dot {
+        margin-left: auto;
+    }
+
+    .mobile-profile-logout {
+        color: #ff3b30;
+    }
+
+    .chat-header .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        z-index: 99;
+        overflow-x: hidden;
+    }
+
+    .chat-header .nav[hidden] {
+        display: none;
+    }
+
+    .chat-header .nav .card {
+        width: min(85%, 320px);
+        max-width: 100%;
+        padding: clamp(12px, 4vw, 20px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .chat-header .nav .user-profile {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .chat-header .nav .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .chat-header .nav .logout-btn {
+        width: 100%;
+        min-height: 44px;
+        margin-top: 12px;
+    }
+
+    .settings-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+        font-size: 20px;
+    }
+
+    /* 消息区 */
+    .messages-container {
+        padding: clamp(12px, 3vw, 20px) clamp(16px, 4vw, 24px);
+        padding-right: max(clamp(16px, 4vw, 24px), 44px);
+        gap: clamp(10px, 2.5vw, 14px);
+        box-sizing: border-box;
+    }
+
+    .message {
+        max-width: 92%;
+        gap: 8px;
+    }
+
+    .message.sent {
+        padding-right: 0;
+        margin-right: 0;
+    }
+
+    .message .avatar-container {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .message .avatar {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .message-username {
+        font-size: clamp(12px, 3vw, 14px);
+    }
+
+    .message-time {
+        font-size: 11px;
+    }
+
+    .message-text {
+        padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 16px);
+        font-size: clamp(13px, 3.2vw, 15px);
+        max-width: 100%;
+    }
+
+    .message-image {
+        max-width: 200px;
+        width: auto;
+        height: auto;
+    }
+
+    /* 输入区：图中布局（语音|输入框|表情|加号|发送），浅色主题，仅手机端 */
+    .message-input-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px 10px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        gap: 6px;
+        background: #E8E8ED;
+        border-top: 1px solid #D1D1D6;
+    }
+
+    .message-input-container .input-tools {
+        display: contents;
+    }
+
+    .message-input-container .voice-btn {
+        order: 1;
+        flex-shrink: 0;
+        min-width: 40px;
+        min-height: 40px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid #D1D1D6;
+        border-radius: 50%;
+        background: #E8E8ED;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message-input-container #messageInput {
+        order: 2;
+        flex: 1 1 0%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 0;
+        min-height: 36px;
+        max-height: 100px;
+        padding: 8px 14px;
+        font-size: 16px;
+        line-height: 1.4;
+        border-radius: 8px;
+        background: #F5F5F7;
+        border: 1px solid #D1D1D6;
+        color: #1d1d1f;
+        box-sizing: border-box;
+    }
+
+    .message-input-container #messageInput::placeholder {
+        color: #8E8E93;
+    }
+
+    .message-input-container #messageInput:focus {
+        outline: none;
+        background: #FFFFFF;
+        border-color: #D1D1D6;
+    }
+
+    .message-input-container .emoji-btn {
+        order: 3;
+        flex-shrink: 0;
+        min-width: 40px;
+        min-height: 40px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid #D1D1D6;
+        border-radius: 50%;
+        background: #E8E8ED;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message-input-container .upload-btn {
+        order: 4;
+        flex-shrink: 0;
+        min-width: 40px;
+        min-height: 40px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid #D1D1D6;
+        border-radius: 50%;
+        background: #E8E8ED;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message-input-container .send-btn {
+        order: 5;
+        flex-shrink: 0;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        background-color: #e8f4fd;
+        color: #333;
+        border: 1px solid #b3d4fc;
+        border-radius: 20px;
+    }
+
+    .message-input-container .send-btn:hover {
+        background-color: #d4e8fd;
+    }
+
+    .message-input-container #uploadProgress {
+        order: 6;
+    }
+
+    .emoji-picker {
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(320px, calc(100vw - 24px));
+        max-width: 100%;
+        bottom: 70px;
+    }
+
+    .emoji-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+
+    .emoji-grid span {
+        font-size: 22px;
+        padding: 10px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .settings-panel {
+        width: 100%;
+        max-width: 100vw;
+        right: -100%;
+    }
+
+    .settings-panel.open {
+        right: 0;
+    }
+
+    .settings-header,
+    .settings-actions-fixed {
+        padding: clamp(14px, 3.5vw, 20px) clamp(20px, 5vw, 30px);
+    }
+
+    .settings-header h2 {
+        font-size: clamp(17px, 4.2vw, 20px);
+    }
+
+    .close-btn {
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+    }
+
+    .settings-content {
+        padding: clamp(16px, 4vw, 24px) clamp(20px, 5vw, 30px);
+    }
+
+    .settings-section {
+        margin-bottom: clamp(20px, 5vw, 28px);
+    }
+
+    .settings-section h3 {
+        font-size: clamp(14px, 3.5vw, 16px);
+        margin-bottom: clamp(12px, 3vw, 18px);
+    }
+
+    .profile-modal .profile-content,
+    .profile-content {
+        width: calc(100% - 24px);
+        max-width: calc(100vw - 24px);
+        margin: 5% 12px;
+        padding: clamp(16px, 4vw, 24px);
+    }
+
+    .profile-header {
+        padding: clamp(14px, 3.5vw, 20px) clamp(18px, 4.5vw, 24px);
+    }
+
+    .profile-header h2 {
+        font-size: clamp(17px, 4.2vw, 20px);
+    }
+
+    .profile-info {
+        padding: clamp(16px, 4vw, 24px);
+    }
+
+    .profile-info .avatar {
+        width: clamp(80px, 28vw, 100px);
+        height: clamp(80px, 28vw, 100px);
+    }
+
+    .profile-info h3 {
+        font-size: clamp(18px, 4.5vw, 22px);
+    }
+
+    .profile-info p {
+        font-size: clamp(13px, 3.2vw, 14px);
+    }
+
+    .profile-add-friend-area .btn-primary {
+        min-height: 44px;
+    }
+
+    /* 频道/好友列表项：触控友好 */
+    .channel-item,
+    .friend-item {
+        min-height: 44px;
+        padding: clamp(12px, 3vw, 14px) clamp(14px, 3.5vw, 18px);
+        font-size: clamp(13px, 3.2vw, 15px);
+    }
+
+    .mode-btn {
+        min-height: 44px;
+        padding: 10px 12px;
+        font-size: clamp(12px, 3vw, 14px);
+    }
+
+    .section-title {
+        font-size: clamp(12px, 3vw, 14px);
+        margin-bottom: clamp(10px, 2.5vw, 14px);
+    }
+
+    /* 通知容器：不超出视口 */
+    .notification-container {
+        left: 12px;
+        right: 12px;
+        top: 12px;
+        max-width: calc(100vw - 24px);
+    }
+
+    .notification {
+        max-width: 100%;
+    }
+
+    /* 黑名单/注销等弹窗内按钮 */
+    .settings-actions .btn-primary,
+    .settings-actions .btn-secondary {
+        min-height: 44px;
+    }
+
+    #saveSettings.btn-primary {
+        min-height: 44px;
+        width: 100%;
+    }
+
+    /* 好友弹窗 */
+    .friend-modal-content {
+        padding: clamp(16px, 4vw, 24px);
+    }
+
+    .friend-requests-scroll {
+        max-height: 50vh;
+    }
+}
+
+/* ========== 小屏优化：320px ~ 480px ========== */
+@media screen and (max-width: 480px) {
+    .chat-header .nav .card {
+        width: 92%;
+    }
+
+    .message {
+        max-width: 95%;
+    }
+
+    .settings-panel {
+        width: 100%;
+    }
+}
+
+/* ========== 极小屏：320px ~ 360px ========== */
+@media screen and (max-width: 360px) {
+    html {
+        font-size: 14px;
+    }
+
+    .login-box {
+        padding: 16px;
+    }
+
+    .chat-header {
+        padding: 10px 12px;
+    }
+
+    .messages-container {
+        padding: 10px 12px;
+    }
+
+    .message-input-container {
+        padding: 10px 12px;
+    }
+
+    .profile-content,
+    .profile-modal .profile-content {
+        width: calc(100% - 16px);
+        margin: 3% 8px;
+        padding: 14px;
+    }
+}
